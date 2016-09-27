@@ -7,10 +7,18 @@ var mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
 var config = require('./config');
 var User = require('./app/models/user');
-var Email = require('./app/models/email');
+
+
+var options = {
+    user : "Hari",
+    pwd : "123",
+    auth : {
+        authdb:'admin'
+    }
+};
 
 var port = process.env.PORT  || 3010;
-mongoose.connect(config.database);
+mongoose.connect(config.database,options);
 app.set('superSecret',config.secret);
 
 app.use(bodyParser.urlencoded({extended:false}));

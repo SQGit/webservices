@@ -7,7 +7,8 @@ var Raiseticket = new Schema({
     description : String,
     imageurl : Array,
     postedon : {type:Date,default:Date.now},
-    ticketstatus : {type:String,enum : ['initiate','pending','reject']}
+    ticketstatus : {type:String,default:"pending"},
+    comments : {type:String,default:null}
 });
 
 module.exports = mongoose.model('User',new Schema({
@@ -22,6 +23,7 @@ module.exports = mongoose.model('User',new Schema({
     uploadphoto : String,
     admin : {type:Boolean,default:false},
     confirm : {type: Boolean,default:false},
-    registeredon : {type:Date,default:Date.now},
+    emailverify : String,
+    emailverifystatus : {type:Boolean,default:false},
     raiseticket : [Raiseticket]
 }));

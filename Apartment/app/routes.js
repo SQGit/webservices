@@ -7,7 +7,6 @@ var nodemailer = require('nodemailer');
 var moment = require('moment');
 
 var User = require('./models/user');
-var Email = require('./models/email');
 
 //User Profile Upload
 
@@ -53,47 +52,110 @@ module.exports = function(app){
 //Resident Email verification
 
 app.post('/emailverify',function(req,res){
-    Email.findOne({
-        email : req.body.email,
-        auth : req.body.auth,
-        username : req.body.username
-    },function(err,email){
-        if(err) throw err;
+     var emailverify = Math.floor(Math.random()*9000)+1000;
 
-        if(!email){
-            var mailOptions = smtpTransport.templateSender({
-            subject : "Email Verification Code for Apartment Complaints",
-            html : "<b>Hello <strong>{{username}}</strong>,your Four Digit Verification code is <span style=color:red;>{{auth}}</span></b>"
-            },{
-            from : "sqtesting2016@gmail.com"
-            });
-            mailOptions({
-                 to : req.body.email
-            },{
-                 username : req.body.username,
-                 auth : req.body.auth
-            },function(err,info){
-                 if(err){
+     User.findOne({email:req.body.email},function(err,email){
+         if(err) throw err;
+         else{
+             if(email){
+                 res.json({
+                     status : false,
+                     message : "Mail has been sent to your email already"
+                 });
+             }else{
+                    var mailOptions = smtpTransport.templateSender({
+                         subject : "Email Verification Code for Apartment Complaints",
+                        html : "<b>Hello <strong>{{username}}</strong>,your Four Digit Verification code is <span style=color:red;>{{auth}}</span></b>"
+                    },{
+                        from : "sqtesting2016@gmail.com"
+                    });
+                    mailOptions({
+                        to : req.body.email
+                    },{
+                        username : req.body.username,
+                        auth : emailverify
+                    },function(err,email){
+                        if(err){
                  res.json({
                  status: false,
                  message : "Error Occured" + err
                  });
                 }else{
-                    res.json({
-                        status : true,
-                        message : "Email Verification code sent to your Mail"
+                    var userModel = new User();
+                    userModel.username = req.body.username;
+                    userModel.email = req.body.email;
+                    userModel.blockno = req.body.blockno;
+                    userModel.houseno = req.body.houseno;
+                    userModel.apartment = req.body.apartment;
+                    userModel.floorno = req.body.floorno;
+                    userModel.phoneno = req.body.phoneno;
+                    userModel.password = req.body.password;
+                    userModel.emailverify = emailverify;
+                    userModel.uploadphoto = null;
+                    userModel.save(function(err,email){
+                        email.save(function(err,email1){
+                             res.json({
+                                status : true,
+                                message : "Email Verification code sent to your Mail",
+                                emailverify : emailverify
+                                    });
+
+                        });
                     });
-                     }
-             });
-            smtpTransport.close();    
-        }else{
+                        }
+                             smtpTransport.close();
+                    });
+
+             }
+         }
+     });
+
+});
+
+    
+
+
+//Email Success
+
+app.post('/emailsuccess',function(req,res){
+    
+    User.findOne({username:req.body.username,email:req.body.email,phoneno:req.body.phoneno,password:req.body.password,emailverify:req.body.emailverify,emailverifystatus:false},function(err,email){
+        if(err) throw err;
+
+        if(!email){
             res.json({
-                status : false,
-                message : "Mail already sent to your E-mail address"
+                status: false,
+                message : "Authentication failed.Wrong code!"
             });
+        }else if(email){
+            if(email.emailverify != req.body.emailverify){
+                res.json({
+                    status : false,
+                    message : "Authentication failed.Wrong code!"
+                });
+            }  else{
+            query = email._id ;
+               User.findByIdAndUpdate(query,{$set:{emailverifystatus:true}},{new:true},function(err,info){
+                if(err){
+                    res.json({
+                        status : false,
+                        message : "Try again"
+                    });
+                }else{
+                    res.json({
+                        status: true,
+                        message : "Wait for your Confirmation Check"
+                    });
+                }
+            });
+        } 
         }
+
     });
 });
+
+
+
 
 //Secretary Static
 
@@ -137,112 +199,63 @@ app.post('/resident',function(req,res){
 
 //Secretary Email Verification
 
-app.post('/emailverifysec',function(req,res){
-    var mailOptions = smtpTransport.templateSender({
-        subject : "Email Verification Code for Secretary Registration",
-        html : "<b>Hello <strong>{{username}}</strong>,your Four digit verification code for Secretary Registration is <span style=color:red;>{{auth}}</span></b>"
-    },{
-        from: "sqtesting2016@gmail.com"
-    });
-
-    mailOptions({
-        to: "csuresh.umi@gmail.com"
-    },{
-        username: req.body.username,
-        auth : req.body.auth
-    },function(err,info){
-        if(err){
-            res.json({
-                status: false,
-                message : "Error Occured" + err
-            });
-        }else{
-            res.json({
-                status:true,
-                message : "Mail sent successfully"
-            });
-        }
-    });
-    smtpTransport.close();
-});
+//
 
 //Resident Signup
 
-app.post('/signupres',function(req,res){
-      User.findOne({apartment:req.body.apartment,blockno:req.body.blockno,floorno:req.body.floorno,houseno:req.body.houseno,username:req.body.username,email:req.body.email,phoneno:req.body.phoneno},function(err,user){
-            if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                if(user){
-                    res.json({
-                        status : false,
-                        message : "User alredy exists!"
-                    });
-                }else{
-                    var userModel = new User();
-                    userModel.apartment = req.body.apartment;
-                    userModel.blockno = req.body.blockno;
-                    userModel.floorno = req.body.floorno;
-                    userModel.houseno = req.body.houseno;
-                    userModel.username = req.body.username;
-                    userModel.email = req.body.email;
-                    userModel.phoneno = req.body.phoneno;
-                    userModel.password = req.body.password;
-                    userModel.save(function(err,user){
-                        user.save(function(err,user1){
-                            res.json({
-                                status : true,
-                                message : "Wait for your Confirmation Mail!"
-                            });
-                        });
-                    });
-                }
-            }
-            });
-});
+//
 
 //Secretary Signup
 
-app.post('/signupsec',function(req,res){
-      User.findOne({apartment:req.body.apartment,blockno:req.body.blockno,floorno:req.body.floorno,houseno:req.body.houseno,username:req.body.username,email:req.body.email,phoneno:req.body.phoneno},function(err,user){
-            if(err){
+//
+
+//Forget password
+
+app.post('/password/forget',function(req,res){
+    User.findOne({email : req.body.email },function(err,email){
+        if(err) throw err;
+
+        if(!email){
+            res.json({
+                status : false,
+                message : "Invalid Email"
+            });
+        }else if(email){
+            if(email.emailverifystatus != true){
                 res.json({
                     status : false,
-                    message : "Error Occured" + err
+                    message : "Verify your email address first"
                 });
             }else{
-                if(user){
-                    res.json({
-                        status : false,
-                        message : "User alredy exists!"
-                    });
-                }else{
-                    var userModel = new User();
-                    userModel.apartment = req.body.apartment;
-                    userModel.blockno = req.body.blockno;
-                    userModel.floorno = req.body.floorno;
-                    userModel.houseno = req.body.houseno;
-                    userModel.username = req.body.username;
-                    userModel.email = req.body.email;
-                    userModel.phoneno = req.body.phoneno;
-                    userModel.password = req.body.password;
-                    userModel.admin = true;
-                    userModel.confirm = true;
-                    userModel.save(function(err,user){
-                        user.save(function(err,user1){
-                            res.json({
-                                status : true,
-                                message : "Wait for your Resident Status check!"
-                            });
+                var mailOptions = smtpTransport.templateSender({
+                    subject : "Password Forget Request for Apartment Complaints",
+                    html : "<b>Hello <strong>{{username}}</strong>,your password for Apartment complaint is <span style=color:red;>{{password}}</span></b>"
+                },{
+                    from : "sqtesting2016@gmail.com"
+                });
+                mailOptions({
+                    to : req.body.email
+                },{
+                    username : email.username,
+                    password : email.password
+                },function(err,email){
+                    if(err){
+                        res.json({
+                            status: false,
+                            message : "Error Occured" + err
                         });
-                    });
-                }
+                    }else{
+                        res.json({
+                            status : true,
+                            message : "Password has been sent to your Registered E-mail address"
+                        });
+                    }
+                });
             }
-            });
+        }
+    });
 });
+
 
 
 var apiRoutes = express.Router();
@@ -251,8 +264,7 @@ var apiRoutes = express.Router();
 
 apiRoutes.post('/login',function(req,res){
 User.findOne({
-    email : req.body.email,
-    confirm : true
+    email : req.body.email
 },function(err,user){
     if(err) throw err;
 
@@ -267,6 +279,11 @@ User.findOne({
                     status : false,
                     message : "Authentication failed.Wrong password"
                     });
+                }else if(user.confirm != true){
+                    res.json({
+                        status : false,
+                        message  : "Wait for Secretary verification"
+                    });
                 }else{
                     var token = jwt.sign(user,app.get('superSecret'),{
                         expiresIn : "24h"
@@ -274,13 +291,23 @@ User.findOne({
 
                     var id = user._id;
                     var admin = user.admin;
+                    var username = user.username;
+                    var houseno = user.houseno;
+                    var blockno = user.blockno;
+                    var apartment = user.apartment;
+                    var floorno = user.floorno;
 
                     res.json({
                         status : true,
                         message : 'Logged in successfully!',
                         id : id,
                         sessiontoken : token,
-                        admin : admin
+                        admin : admin,
+                        username : username,
+                        houseno : houseno,
+                        blockno : blockno,
+                        apartment : apartment,
+                        floorno : floorno
                     });
                 
             }
@@ -345,7 +372,7 @@ apiRoutes.post('/newresident/confirm',function(req,res){
             });
         }else{
             res.json({
-                status : false,
+                status : true,
                 message : "Resident has been confirmed"
             });
         }
@@ -365,7 +392,7 @@ apiRoutes.post('/newresident/reject',function(req,res){
             });
         }else{
             res.json({
-                status : false,
+                status : true,
                 message : "Application has been successfully removed"
             });
         }
@@ -375,7 +402,7 @@ apiRoutes.post('/newresident/reject',function(req,res){
 //Secretary Viewing Recent tickets
 
 apiRoutes.post('/recenttickets',function(req,res){
-    User.find({"admin":false},{"raiseticket":{$elemMatch:{"ticketstatus":false}}},{"apartment":1,"blockno":1,"floorno":1,"hoseno":1,"username":1,"email":1,"phoneno":1,},
+    User.find({"raiseticket":{$elemMatch:{"ticketstatus":"pending"}}},{"apartment":1,"blockno":1,"floorno":1,"houseno":1,"username":1,"email":1,"phoneno":1,"raiseticket.$":1},
     function(err,info){
         if(err){
             res.json({
@@ -390,6 +417,26 @@ apiRoutes.post('/recenttickets',function(req,res){
         }
     }
     )
+});
+
+//Secretary Updating status on Recent ticket
+
+apiRoutes.post('/recenttickets/update',function(req,res){
+    var ticketstatus = req.body.ticketstatus;
+    var comments = req.body.comments;
+    User.findOneAndUpdate({"raiseticket.ticketid":req.body.ticketid},{$set:{"raiseticket.$.ticketstatus":ticketstatus,"raiseticket.$.comments":comments}},{safe:true,upsert:true,new:true},function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Try again"
+            });
+        }else{
+            res.json({
+                status : true,
+                message : "Ticket status has been updated"
+            });
+        }
+    });
 });
 
 //User Uploading photo
@@ -428,12 +475,7 @@ apiRoutes.post('/user/upload',function(req,res){
 apiRoutes.post('/resident/raiseticket',function(req,res){
     var query = req.headers['id'];
    
-    var a = moment().get('date');
-    var b = moment().get('hour')
-    var c = moment().get('minute');
-
-    var ticket = "IRIS" + a + "-" + b + "-" + c;
-
+    var ticket = "IRIS" + moment().format('YYMMMDDhmmss');
 
     complaintUpload(req,res,function(err){
         if(err){
@@ -442,8 +484,7 @@ apiRoutes.post('/resident/raiseticket',function(req,res){
                 message : "Error Occured" + err
             });
         }else{
-            var ticket = Date();
-            User.findByIdAndUpdate(query,{$push:{"raiseticket":{ticketid:ticket,complaint:req.body.complaint,description:req.body.descrtiption,imageurl:req.files}}},
+            User.findByIdAndUpdate(query,{$push:{"raiseticket":{ticketid:ticket,complaint:req.body.complaint,description:req.body.description,imageurl:req.files}}},
             {safe:true,upsert:true,new:true},
             function(err,info){
                 if(err){
@@ -454,7 +495,8 @@ apiRoutes.post('/resident/raiseticket',function(req,res){
                 }else{
                     res.json({
                         status : true,
-                        message : "Your ticket has been added successfully"
+                        ticketid : ticket,
+                        message : "Your ticket has been added successfully",
                     });
                 }
             }
@@ -464,11 +506,49 @@ apiRoutes.post('/resident/raiseticket',function(req,res){
 });
 
 
+//User Viewing Own Tickets
+
+apiRoutes.post('/resident/ticketstatus',function(req,res){
+    var query = req.body.id;
+    User.findOne({"_id":query},function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Try again"
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    });
+});
 
 
+//Password Change
 
+apiRoutes.post('/password/change',function(req,res){
+    User.findOne({password : req.body.oldpassword},function(err,info){
+        if(err) throw err;
 
-
+        if(info){
+            User.update({"_id":req.body.id},{$set:{"password":req.body.newpassword}},{new:true},function(err,info1){
+                if(err){
+                    res.json({
+                        status : false,
+                        message : "Error Occured" + err
+                    });
+                }else{
+                    res.json({
+                        status : true,
+                        message  : "Your Password has been Changed successfully"
+                    });
+                }
+            });
+        }
+    });
+});
 
 
 
