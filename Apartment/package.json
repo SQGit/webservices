@@ -1,0 +1,25 @@
+{
+  "name": "apts",
+  "version": "1.0.0",
+  "description": "Mcity Apartment complaint app",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Hari",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "ejs": "^2.5.2",
+    "express": "^4.14.0",
+    "jsonwebtoken": "^7.1.9",
+    "mime": "^1.3.4",
+    "moment": "^2.15.1",
+    "mongoose": "^4.6.0",
+    "morgan": "^1.7.0",
+    "multer": "^1.2.0",
+    "nodemailer": "^2.6.0",
+    "nodemailer-smtp-transport": "^2.7.2"
+  }
+}
