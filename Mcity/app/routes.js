@@ -16,6 +16,12 @@ var storage = multer.diskStorage({
 });
 
 
+var upload = multer({
+    storage : storage
+}).array('file',6);
+
+
+
 module.exports = function(app){
 
 app.get('/uploads/:name',function(req,res,next){
