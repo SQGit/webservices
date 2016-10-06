@@ -3,8 +3,8 @@ var Schema = mongoose.Schema;
 
 var Raiseticket = new Schema({
     ticketid : String,
-    complaint : String,
-    description : String,
+    complaint : {type:String,default:"null"},
+    description : {type:String,default:"null"},
     imageurl : Array,
     postedon : {type:Date,default:Date.now},
     ticketstatus : {type:String,default:"pending"},

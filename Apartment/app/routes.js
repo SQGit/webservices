@@ -49,6 +49,52 @@ var smtpTransport = nodemailer.createTransport('smtps://sqtesting2016%40gmail.co
 
 module.exports = function(app){
 
+// Complaint pictures
+
+app.get('/complaint/:name',function(req,res,next){
+    var options = {
+        root : __dirname
+    };
+
+    var filename = req.params.name;
+    res.sendFile(filename,options,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : filename + "has been sent"
+            });
+        }
+    });
+});
+
+//User pictures
+
+app.get('/user/:name',function(req,res,next){
+    var options = {
+        root : ___dirname
+    };
+
+    var filename = req.params.name;
+    res.sendFile(filename,options,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : filename + "has been sent"
+            });
+        }
+    });
+});    
+
 //Resident Email verification
 
 app.post('/emailverify',function(req,res){
@@ -402,7 +448,7 @@ apiRoutes.post('/newresident/reject',function(req,res){
 //Secretary Viewing Recent tickets
 
 apiRoutes.post('/recenttickets',function(req,res){
-    User.find({"raiseticket":{$elemMatch:{"ticketstatus":"pending"}}},{"apartment":1,"blockno":1,"floorno":1,"houseno":1,"username":1,"email":1,"phoneno":1,"raiseticket.$":1},
+    User.find({"raiseticket.ticketstatus":"pending"},{"apartment":1,"blockno":1,"floorno":1,"houseno":1,"username":1,"email":1,"phoneno":1,"raiseticket":1},
     function(err,info){
         if(err){
             res.json({
@@ -416,7 +462,7 @@ apiRoutes.post('/recenttickets',function(req,res){
             });
         }
     }
-    )
+    ).sort({postedon : -1})
 });
 
 //Secretary Updating status on Recent ticket
@@ -450,7 +496,7 @@ apiRoutes.post('/user/upload',function(req,res){
                 message : "Error Occured" + err
             });
         }else{
-            User.update({"_id":query},{$set:{"uploadphoto":req.file.path}},
+            User.update({"_id":query},{$set:{"uploadphoto":req.file.filename}},
             {safe:true,upsert:true,new:true},
             function(err,info1){
                 if(err){
@@ -461,7 +507,8 @@ apiRoutes.post('/user/upload',function(req,res){
                 }else{
                     res.json({
                         status : true,
-                        message : "Profile Image has been added successfully"
+                        message : "Profile Image has been added successfully",
+                        filename : req.file.filename
                     });
                 }
             });
@@ -474,8 +521,10 @@ apiRoutes.post('/user/upload',function(req,res){
 
 apiRoutes.post('/resident/raiseticket',function(req,res){
     var query = req.headers['id'];
-   
-    var ticket = "IRIS" + moment().format('YYMMMDDhmmss');
+    var complaint = req.headers['complaint'] || req.body.complaint;
+    var description = req.headers['description'] || req.body.description;
+
+    var ticket = "IRIS" + moment().add(5.5,'hours').format('YYMMMDDhmmss');
 
     complaintUpload(req,res,function(err){
         if(err){
@@ -484,7 +533,7 @@ apiRoutes.post('/resident/raiseticket',function(req,res){
                 message : "Error Occured" + err
             });
         }else{
-            User.findByIdAndUpdate(query,{$push:{"raiseticket":{ticketid:ticket,complaint:req.body.complaint,description:req.body.description,imageurl:req.files}}},
+            User.findByIdAndUpdate(query,{$push:{"raiseticket":{$each:[{ticketid:ticket,complaint:complaint,description:description,imageurl:req.files}],$position:0}}},
             {safe:true,upsert:true,new:true},
             function(err,info){
                 if(err){

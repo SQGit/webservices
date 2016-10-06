@@ -21,6 +21,11 @@ var port = process.env.PORT  || 3010;
 mongoose.connect(config.database,options);
 app.set('superSecret',config.secret);
 
+app.use(express.static('public'));
+
+app.use('/complaint',express.static(__dirname + '/complaint'));
+app.use('/user',express.static(__dirname + '/user'));
+
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 
