@@ -3,7 +3,12 @@ var app = express();
 var jwt = require('jsonwebtoken');
 var multer = require('multer');
 var mime = require('mime');
+var moment = require('moment');
+
+var Time = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm');
+
 var User = require('./models/user');
+var Train = require('./models/train');
 
 var storage = multer.diskStorage({
     destination : function (req,file,cb){
@@ -24,6 +29,47 @@ var upload = multer({
 
 module.exports = function(app){
 
+//Uploading the Train Timings
+
+app.post('/trainupload',function(req,res){
+    Train.findOne({name:req.body.name},function(err,train){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            if(train){
+                res.json({
+                    status : false,
+                    message  : "Train already exists"
+                });
+            }else{
+                var trainModel = new Train();
+                trainModel.name = req.body.name;
+                trainModel.time = req.body.time;
+                trainModel.sun = req.body.sun;
+                trainModel.mon = req.body.mon;
+                trainModel.tue = req.body.tue;
+                trainModel.wed = req.body.wed;
+                trainModel.thu = req.body.thu;
+                trainModel.fri = req.body.fri;
+                trainModel.sat = req.body.sat;
+                trainModel.save(function(err,train){
+                    train.save(function(err,train1){
+                        res.json({
+                            status : true,
+                            message : "Train has been added successfully"
+                        });
+                    });
+                });
+            }
+        }
+    });
+});
+
+//Retrieving the uploaded documents    
+
 app.get('/uploads/:name',function(req,res,next){
     var options = {
         root : __dirname 
@@ -40,10 +86,10 @@ app.get('/uploads/:name',function(req,res,next){
             res.json({
                 status : true,
                 message : filename + "has been sent"
-            })
+            });
         }
-    })
-})
+    });
+});
 
 app.get('/',function(req,res){
     res.send('Hello! The API is at http://localhost:' + port + '/api');
@@ -106,6 +152,8 @@ app.get('/setup',function(req,res){
 
 var apiRoutes = express.Router();
 
+//Login
+
 apiRoutes.post('/login',function(req,res){
 
     User.findOne({
@@ -160,6 +208,8 @@ apiRoutes.use(function(req,res,next){
 });
 
 
+//Post For Rent
+
 apiRoutes.post('/postforrent',function(req,res){
     var query = req.headers['id'];
     var location = req.headers['location'];
@@ -201,8 +251,8 @@ apiRoutes.post('/postforrent',function(req,res){
     });
 });
 
-
-
+/*
+//Search For Rent
 
 apiRoutes.post('/searchforrent',function(req,res){
      var minvalue = req.body.minvalue;
@@ -226,7 +276,34 @@ apiRoutes.post('/searchforrent',function(req,res){
 
 });
 
-   apiRoutes.post('/postforroom',function(req,res){
+*/
+//Search For Rent
+
+apiRoutes.post('/searchforrent',function(req,res){
+     var minvalue = req.body.minvalue;
+     var maxvalue = req.body.maxvalue;
+     User.find({"postforrent":{$elemMatch:{$or:[{"bedroom":req.body.bedroom} || {"location":req.body.location} || {"residential":req.body.residential} || {"furnishedtype":req.body.furnishedtype} || {"monthlyrent":{$gt:minvalue,$lte:maxvalue}}]}}},{"username":1,"email":1,"mobileno":1,"postforrent.$":1},
+     function(err,info){
+         if(err){
+             res.json({
+                 status: false,
+                 message: "Search not found" + err
+             });
+             }else{
+                 res.json({
+                     status: true,
+                     message: info
+                 });
+             }
+         }
+     
+     )
+
+});
+
+//Post for Room
+
+apiRoutes.post('/postforroom',function(req,res){
        var query = req.headers['id'];
        User.findByIdAndUpdate(query,{$push:{"postforroom":{location:req.body.location,landmark:req.body.landmark,address:req.body.address,roomtype:req.body.roomtype,monthlyrent:req.body.monthlyrent,gender:req.body.gender,description:req.body.description}}},
             {safe:true,upsert:true,new:true},
@@ -246,10 +323,12 @@ apiRoutes.post('/searchforrent',function(req,res){
        );
    });
 
+   //Search for room
+
    apiRoutes.post('/searchforroom',function(req,res){
        var minvalue = req.body.minvalue;
        var maxvalue = req.body.maxvalue;
-       User.find({"postforroom":{$elemMatch:{"roomtype":req.body.roomtype,"location":req.body.location,"gender":req.body.gender,"monthlyrent":{$gt:minvalue,$lte:maxvalue}}}},{"username":1,"email":1,"mobileno":1,"postforroom.$":1},
+       User.find({"postforroom":{$elemMatch:{$or:[{"roomtype":req.body.roomtype} || {"location":req.body.location} || {"gender":req.body.gender} || {"monthlyrent":{$gt:minvalue,$lte:maxvalue}}]}}},{"username":1,"email":1,"mobileno":1,"postforroom.$":1},
        function(err,info){
            if(err){
                res.json({
@@ -266,6 +345,129 @@ apiRoutes.post('/searchforrent',function(req,res){
        )
    });
 
+   
+//Post for Ride
+
+apiRoutes.post('/postforride',function(req,res){
+    var query = req.headers['id'];
+    User.findByIdAndUpdate(query,{$push:{"postforride":{from:req.body.from,to:req.body.to,date:req.body.date,godate:req.body.godate,returndate:req.body.returndate,extraluggage:req.body.extraluggage,price:req.body.price,midwaydrop:req.body.midwaydrop}}},
+    {safe:true,upsert:true,new:true},
+    function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : "Your Post has been added successfully"
+            });
+        }
+    }
+    );
+});   
+
+//Search for Ride
+
+apiRoutes.post('/searchforride',function(req,res){
+    var currenttime = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm');
+    User.find({"postforride":{$elemMatch : {"date":{$gte:currenttime}}}},{"username":1,"email":1,"mobileno":1,"postforride.$":1},
+    function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    }
+    );
+});
+
+
+
+
+//Search for Ride from-to
+
+apiRoutes.post('/searchforridefilter',function(req,res){
+    var currenttime = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm');
+    User.find({"postforride":{$elemMatch :{$or:[ {"from":req.body.from} || {"to":req.body.to} || {"date":{$gte:currenttime}}]}}},{"username":1,"email":1,"mobileno":1,"postforride.$":1},
+    function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    }
+    );
+});
+
+apiRoutes.post('/advancedsearch',function(req,res){
+    User.find({"postforride":{$elemMatch:{$or:[{"from":req.body.from} || {"to":req.body.to} || {"time":req.body.time} || {"godate":req.body.godate} || {"returndate":req.body.returndate}  || {"extraluggage":req.body.extraluggage}]}}},{"username":1,"email":1,"mobileno":1,"postforride.$":1},
+    function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    }
+    );
+});
+
+apiRoutes.post('/trainsearch',function(req,res){ 
+    var time = req.body.departuretime;
+    var a = Train.find({"mon":"y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0}).limit(6);
+    a.exec(function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+                res.json({
+                    status : true,
+                    message : info
+                });
+            }   
+    }
+    );
+    
+});
+
+apiRoutes.post('/trainsearchsun',function(req,res){
+    var time = req.body.departuretime;
+    var a = Train.find({"sun":"y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0}).limit(6); 
+    a.exec(function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            })
+        }
+    })
+})
 
 apiRoutes.get('/',function(req,res){
     res.json({message : 'Welcome to the coolest API on earth'});

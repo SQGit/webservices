@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
 var config = require('./config');
 var User = require('./app/models/user');
+var Train = require('./app/models/train');
 
 var options = {
     user : "Hari",
