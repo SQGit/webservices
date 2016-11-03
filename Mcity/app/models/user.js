@@ -11,11 +11,12 @@ var Postforrent = new Schema({
     city : String,
     residential : {type:String, enum: ['Apartment,Villa,Duplex']},
     furnishedtype : {type : String, enum: ['Furnished,Semi-furnished,Unfurnished']},
-    bedroom : {type : String, enum : ['2bhk','3bhk','4bhk']},
+    bedroom : {type : String, enum : ['2bhk','3bhk','4bhk','1/1.5bhk','2/2.5bhk','studio']},
     renttype : {type : String, enum : ['Rent,Lease']},
     monthlyrent : Number,
     deposit : Number,
     description : String,
+    phone : String,
     imageurl : Array,
     postedon : {type:String,default:Time}
 });
@@ -28,6 +29,7 @@ var Postforroom = new Schema({
     monthlyrent : Number,
     gender : {type: String, enum:['Male','Female']},
     description : String,
+    phone : String,
     postedon:{type:String,default:Time}
 });
 
@@ -40,12 +42,17 @@ var Otherdetails = new Schema({
 });
 
 var Postforride = new Schema({
-    from : String,
-    to : String,
+    from : {type : String, enum:['Aqualily/BMW','Canopy/Sylvan County','Iris Court','Nova','MRV','Infosys Main Gate','Zero Point']},
+    to : {type : String, enum:['Tambaram','Chengalpattu','Tnagar','Central Station','Chennai Airport','Paranur Station']},
     date : {type:String,default:Time},
     otherdetails : [Otherdetails],
-    price: String,
-    midwaydrop : String
+    price: Number,
+    midwaydrop : String,
+    phone : String
+});
+
+var Coupons = new Schema({
+    code : String
 });
 
 module.exports = mongoose.model('User',new Schema({
@@ -54,8 +61,11 @@ module.exports = mongoose.model('User',new Schema({
     email: String,
     password : String,
     admin : Boolean,
+    licence : Array,
+    licenceverified : {type:Boolean,default:false},
     postforrent : [Postforrent],
     postforroom : [Postforroom],
-    postforride : [Postforride] 
+    postforride : [Postforride],
+    coupons : [Coupons]
 }));
 
