@@ -11,6 +11,9 @@ var port = process.env.PORT || 3030;
 
 app.set('superSecret',config.secret);
 
+app.use(express.static('public'));
+app.use('/uploads',express.static(__dirname + '/uploads'));
+
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 

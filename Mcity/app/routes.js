@@ -5,12 +5,18 @@ var multer = require('multer');
 var mime = require('mime');
 var moment = require('moment');
 var nodemailer = require('nodemailer');
+var cors = require('cors');
+var request = require('request');
 
 var Time = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm');
 
 var User = require('./models/user');
 var Train = require('./models/train');
 var Coupon = require('./models/coupon');
+var Auto = require('./models/auto');
+var Restaurant = require('./models/restaurant')
+var Retail = require('./models/retail')
+var Revtrain = require('./models/revtrain');
 
 //Post for Rent Image Storage
 
@@ -44,6 +50,25 @@ var licencestorage = multer.diskStorage({
 var licenceupload = multer({
     storage : licencestorage
 }).array('file',1);
+
+
+//Post for Garage Storage
+
+var garagestorage = multer.diskStorage({
+    destination : function (req,file,cb){
+        cb(null,'./public/garage');
+    },
+    filename: function(req,file,cb){
+        var datetimestamp = Date.now();
+        cb(null,file.fieldname + '-' + datetimestamp + '.' + mime.extension(file.mimetype));
+    }
+});
+
+
+var garageupload = multer({
+    storage : garagestorage
+}).array('file',5);
+
 
 //nodemailer
 
@@ -90,15 +115,15 @@ app.post('/trainupload',function(req,res){
     });
 });
 
-// Create Coupons
+// Upload Coupons
 
-app.post('/createcoupons',function(req,res){
+app.post('/uploadcoupons',function(req,res){
     
     var coupon = new Coupon({
-        shopname : req.body.shopname,
-        code : req.body.shop,
-        expireddate : req.body.expireddate,
-        description : req.body.description
+        shopname : req.headers['shopname'],
+        code : req.headers['code'],
+        expireddate : req.headers['expireddate'],
+        description : req.headers['description']
     });
 
     coupon.save(function(err){
@@ -110,6 +135,65 @@ app.post('/createcoupons',function(req,res){
     });
 
 });
+
+// Upload Autos
+
+app.post('/uploadauto',function(req,res){
+    var auto = new Auto({
+        pickuppoint : req.body.pickuppoint,
+        droppoint : req.body.droppoint,
+        rate : req.body.rate
+    });
+
+    auto.save(function(err){
+        if(err) throw err;
+
+        res.json({
+            status : true
+        });
+    });
+});
+
+//Upload Restaurant
+
+app.post('/uploadrestaurant',function(req,res){
+    var restaurant = new Restaurant({
+        restaurantname : req.headers['restaurantname'],
+        address : req.headers['address'],
+        openingtime : req.headers['openingtime'],
+        mobileno : req.headers['mobileno'],
+        description : req.headers['description']
+    });
+
+    restaurant.save(function(err){
+        if(err) throw err;
+
+        res.json({
+            status : true
+        });
+    });
+});
+
+//Upload Retail
+
+app.post('/uploadretail',function(req,res){
+    var retail = new Retail({
+        retailname : req.headers['retailname'],
+        retaildescription : req.headers['retaildescription'],
+        openingtime : req.headers['openingtime'],
+        mobileno : req.headers['mobileno'],
+        description : req.headers['description']
+    });
+
+    retail.save(function(err){
+        if(err) throw err;
+
+        res.json({
+            status : true
+        });
+    });
+});
+
 
 //Retrieving the uploaded documents    
 
@@ -156,9 +240,135 @@ app.get('/licence/:name',function(req,res,next){
     });
 });
 
-app.get('/',function(req,res){
-    res.send('Hello! The API is at http://localhost:' + port + '/api');
+
+//Retrieving the Coupon Provider Logos
+
+app.get('/coupons/:name',function(req,res,next){
+    var options = {
+        root : __dirname
+    };
+    var filename = req.params.name;
+    res.sendFile(filename,options,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : filename + "has been sent"
+            });
+        }
+    });
 });
+
+//Retrieving the Restaurant details
+
+app.get('/restaurant/:name',function(req,res,next){
+    var options = {
+        root : __dirname
+    };
+    var filename = req.params.name ;
+    res.sendFile(filename,options,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : filename + "has been sent"
+            });
+        }
+    });
+});
+
+//Retrieving the Retail details
+
+app.get('/retail/:name',function(req,res,next){
+    var options = {
+        root : __dirname
+    };
+    var filename = req.params.name ;
+    res.sendFile(filename,options,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : filename + "has been sent"
+            });
+        }
+    });
+});
+
+//Retrieving the Garage Images    
+
+app.get('/garage/:name',function(req,res,next){
+    var options = {
+        root : __dirname 
+    };
+
+    var filename = req.params.name;
+    res.sendFile(filename,options,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : filename + "has been sent"
+            });
+        }
+    });
+});
+
+
+
+//User Setup
+
+app.get('/setup',function(req,res){
+
+        var sq = new User({
+            username : 'sqindia',
+            mobileno : '12345678',
+            email : 'sqindia@sqindia.net',
+            password : 'password',
+            admin : true
+        });
+        sq.save(function(err){
+            if(err) throw err;
+
+            console.log("User saved successfully");
+            res.json({status : true});
+        });
+
+}); 
+
+//cors
+
+app.post('/',cors(),function(req,res,next){
+
+    var name = req.body.driver_name ;
+    var email = req.body.driver_email;
+
+    res.json({
+        status : "hello " + name + "your email is " + email 
+    });
+    console.log(req.body);
+    console.log(name);
+    console.log(email);
+});
+
+/*
+//User Signing up
 
 app.post('/signup',function(req,res){
     var password = Math.floor(Math.random()*90000)+10000;
@@ -220,11 +430,107 @@ app.post('/signup',function(req,res){
 });
 
 
-//OTP Generate
+*/
+
+// User Signing up without sendng OTP
+
+
+app.post('/signup',function(req,res){
+    var password = Math.floor(Math.random()*90000)+10000;
+    User.findOne({username:req.body.username,mobileno:req.body.mobileno,email:req.body.email},function(err,user){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured" + err
+            });
+        }else{
+            if(user){
+                res.json({
+                    status: false,
+                    message: "User already exists!"
+                });
+            }else{
+                var userModel = new User();
+                        userModel.username = req.body.username;
+                        userModel.mobileno = req.body.mobileno;
+                        userModel.email = req.body.email;
+                        userModel.save(function(err,user){
+                        res.json({
+                            status: true,
+                            message: 'Thank You for Registering.Please Login'
+                        });
+                        });
+                         
+                     
+                    
+            }
+        }
+    });
+});
+
+
+
+// //OTP Generate Email
+
+// app.post('/otpgenerate',function(req,res){
+//     var password = Math.floor(Math.random()*90000)+10000;
+//     User.findOne({email:req.body.email},function(err,user){
+//         if(err){
+//             res.json({
+//                 status : false,
+//                 message : "Error Occured" + err
+//             });
+//         }else if(!user){
+//             res.json({
+//                 status : false,
+//                 message : "You have to Register first to get an OTP"
+//             });
+//         }else{
+//                  var mailOptions = smtpTransport.templateSender({
+//                 subject : "Password for mCity App",
+//                 html : "<b>Hello <strong>{{username}}</strong>, your One Time Password for mCity App is <span style=color:red;>{{password}}</span></b>"
+//             },{
+//                 from : "mcitysq@gmail.com"
+//             });
+//             mailOptions({
+//                 to : req.body.email
+//             },{
+//                 username : user.username,
+//                 password : password
+//             },function(err,email){
+//                 if(err){
+//                     res.json({
+//                         status : false,
+//                         message : "Error Occured" + err
+//                     });
+//                 }else{
+//                     User.findOneAndUpdate({"email":req.body.email},{$set:{"password":password}},{safe:true,upsert:true,new:true},function(err,info){
+//                         if(err){
+//                             res.json({
+//                                 status : false,
+//                                 message : "Try again"
+//                             });
+//                         }else{
+//                             res.json({
+//                                 status : true,
+//                                 message : "An Email with Passcode has been sent"
+//                             });
+//                         }
+//                     });
+//                 }
+//             });
+//         }
+//     });
+// });
+
+
+
+//OTP Generate 2factor
 
 app.post('/otpgenerate',function(req,res){
-    var password = Math.floor(Math.random()*90000)+10000;
-    User.findOne({email:req.body.email},function(err,user){
+    
+    
+    User.findOne({mobileno:req.body.mobileno},function(err,user){
         if(err){
             res.json({
                 status : false,
@@ -236,25 +542,20 @@ app.post('/otpgenerate',function(req,res){
                 message : "You have to Register first to get an OTP"
             });
         }else{
-                 var mailOptions = smtpTransport.templateSender({
-                subject : "Password for mCity App",
-                html : "<b>Hello <strong>{{username}}</strong>, your One Time Password for mCity App is <span style=color:red;>{{password}}</span></b>"
-            },{
-                from : "mcitysq@gmail.com"
-            });
-            mailOptions({
-                to : req.body.email
-            },{
-                username : user.username,
-                password : password
-            },function(err,email){
-                if(err){
-                    res.json({
-                        status : false,
-                        message : "Error Occured" + err
-                    });
-                }else{
-                    User.findOneAndUpdate({"email":req.body.email},{$set:{"password":password}},{safe:true,upsert:true,new:true},function(err,info){
+                
+             var password = Math.floor(Math.random()*9000)+1000;
+
+             var mobileno = req.body.mobileno;
+             var url = 'http://2factor.in/API/V1/2bc5bbd5-b23f-11e6-a40f-00163ef91450/SMS/' + '+91' + mobileno + '/' + password +'/mcity'
+            
+            var options = { method: 'GET',
+                url : url,
+            body: '{}' };
+
+            request(options, function (error, response, body) {
+            if (error) throw new Error(error);
+            else{
+                    User.findOneAndUpdate({"mobileno":req.body.mobileno},{$set:{"password":password}},{safe:true,upsert:true,new:true},function(err,info){
                         if(err){
                             res.json({
                                 status : false,
@@ -263,12 +564,14 @@ app.post('/otpgenerate',function(req,res){
                         }else{
                             res.json({
                                 status : true,
-                                message : "OTP has been sent to your mail successfully"
+                                message : "Please enter the OTP you received"
                             });
                         }
                     });
-                }
-            });
+            }
+            
+    });
+
         }
     });
 });
@@ -276,32 +579,55 @@ app.post('/otpgenerate',function(req,res){
 
 
 
-app.get('/setup',function(req,res){
-
-        var sq = new User({
-            username : 'sqindia',
-            mobileno : '12345678',
-            email : 'sqindia@sqindia.net',
-            password : 'password',
-            admin : true
-        });
-        sq.save(function(err){
-            if(err) throw err;
-
-            console.log("User saved successfully");
-            res.json({status : true});
-        });
-
-}); 
-
 var apiRoutes = express.Router();
 
-//Login
+
+
+// // Email Login
+
+
+// apiRoutes.post('/login',function(req,res){
+
+//     User.findOne({
+//         email : req.body.email 
+//     },function(err,user){
+//         if(err) throw err;
+
+//         if(!user){
+//             res.json({status:false,message:'Authentication failed.User not found'});
+//         }else if(user){
+//             if(user.password != req.body.password){
+//                 res.json({status: false,message: 'Authentication failed.Wrong password'});
+//             }else{
+//                 var token = jwt.sign(user,app.get('superSecret'),{
+//                     expiresIn: "365 days"
+//                 });
+
+//                var id = user._id;
+//                var licence = user.licence;
+
+//                 res.json({
+//                     status: true,
+//                     message: 'Logged in successfully!',
+//                     id : id,
+//                     token: token,
+//                     licence : licence
+//                    });
+                
+//          }
+//          }
+// });
+// });
+
+
+
+//Login 2factor
+
 
 apiRoutes.post('/login',function(req,res){
 
     User.findOne({
-        email : req.body.email 
+        mobileno : req.body.mobileno 
     },function(err,user){
         if(err) throw err;
 
@@ -330,7 +656,6 @@ apiRoutes.post('/login',function(req,res){
          }
 });
 });
-
 
 
 apiRoutes.use(function(req,res,next){
@@ -399,7 +724,9 @@ apiRoutes.post('/postforrent',function(req,res){
                 message : "Error Occured" + err
             });
         }else{
-            User.findByIdAndUpdate(query,{$push:{"postforrent":{location : location,landmark : landmark,address: address,city : city,furnishedtype : furnishedtype,residential : residential, bedroom : bedroom,renttype : renttype,monthlyrent : monthlyrent,deposit : deposit,description : description,phone : phone,imageurl:req.files}}},
+
+
+            User.findByIdAndUpdate(query,{$push:{"postforrent":{$each:[{location : location,landmark : landmark,address: address,city : city,furnishedtype : furnishedtype,residential : residential, bedroom : bedroom,renttype : renttype,monthlyrent : monthlyrent,deposit : deposit,description : description,phone : phone,imageurl:req.files}],$position:0}}},
             {safe:true,upsert:true,new:true},
             function(err,info){
                 if(err){
@@ -420,10 +747,10 @@ apiRoutes.post('/postforrent',function(req,res){
     });
 });
 
-/*
+
 //Search For Rent
 
-apiRoutes.post('/searchforrent',function(req,res){
+apiRoutes.post('/searchforrent1',function(req,res){
      var minvalue = req.body.minvalue;
      var maxvalue = req.body.maxvalue;
      User.find({"postforrent.bedroom":req.body.bedroom,"postforrent.location":req.body.location,"postforrent.residential":req.body.residential,"postforrent.furnishedtype":req.body.furnishedtype,"postforrent.monthlyrent":{$gt:minvalue,$lte:maxvalue}},{"username":1,"email":1,"mobileno":1,"postforrent.$":1},
@@ -446,12 +773,73 @@ apiRoutes.post('/searchforrent',function(req,res){
 });
 
 
+
 //Search For Rent
 
-apiRoutes.post('/searchforrent',function(req,res){
+apiRoutes.post('/searchforrent11',function(req,res){
      var minvalue = req.body.minvalue;
      var maxvalue = req.body.maxvalue;
-     User.find({"postforrent":{$elemMatch:{$or:[{"bedroom":req.body.bedroom} || {"location":req.body.location} || {"residential":req.body.residential} || {"furnishedtype":req.body.furnishedtype} || {"monthlyrent":{$gt:minvalue,$lte:maxvalue}}]}}},{"username":1,"email":1,"mobileno":1,"postforrent.$":1},
+     User.find({"postforrent.bedroom":req.body.bedroom,"postforrent.location":req.body.location,"postforrent.residential":req.body.residential,"postforrent.furnishedtype":req.body.furnishedtype,"postforrent.monthlyrent":{$gt:minvalue,$lte:maxvalue}},{"username":1,"email":1,"mobileno":1,"postforrent.$":1},
+     function(err,info){
+         if(err){
+             res.json({
+                 status: false,
+                 message: "Error Occured" + err
+             });
+             }else{
+                 res.json({
+                     status: true,
+                     message: info
+                 });
+             }
+         }
+     
+     )
+
+});
+
+
+
+
+
+//Search For Rent
+
+apiRoutes.post('/searchforrent111',function(req,res){
+    var minvalue = req.body.minvalue;
+    var maxvalue = req.body.maxvalue;
+
+    var a = User.aggregate([
+        {$match: {"postforrent.bedroom":req.body.bedroom,"postforrent.location":req.body.location,"postforrent.residential":req.body.residential,"postforrent.furnishedtype":req.body.furnishedtype} || {"postforrent.monthlyrent":{$gt:minvalue,$lte:maxvalue}}},
+        {$unwind : "$postforrent"},
+        {$match: {"postforrent.bedroom":req.body.bedroom,"postforrent.location":req.body.location,"postforrent.residential":req.body.residential,"postforrent.furnishedtype":req.body.furnishedtype} || {"postforrent.monthlyrent":{$gt:minvalue,$lte:maxvalue}}},
+        {$project : {"username":1,"email":1,"mobileno":1,"postforrent":1}}
+    ]);
+
+    a.exec(function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message :"Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    });
+
+});
+
+
+
+
+//Search For Rent
+
+apiRoutes.post('/searchforrent2',function(req,res){
+     var minvalue = req.body.minvalue;
+     var maxvalue = req.body.maxvalue;
+     User.find({"postforrent":{$elemMatch:{$or:[{"bedroom":req.body.bedroom},{"location":req.body.location},{"residential":req.body.residential},{"furnishedtype":req.body.furnishedtype},{"monthlyrent":{$gt:minvalue,$lte:maxvalue}}]}}},{"username":1,"email":1,"mobileno":1,"postforrent.$":1},
      function(err,info){
          if(err){
              res.json({
@@ -470,7 +858,7 @@ apiRoutes.post('/searchforrent',function(req,res){
 
 });
 
-*/
+
 
 //Search For Rent
 
@@ -547,7 +935,8 @@ apiRoutes.post('/removerent',function(req,res){
 
 apiRoutes.post('/postforroom',function(req,res){
        var query = req.headers['id'];
-       User.findByIdAndUpdate(query,{$push:{"postforroom":{location:req.body.location,landmark:req.body.landmark,address:req.body.address,roomtype:req.body.roomtype,monthlyrent:req.body.monthlyrent,gender:req.body.gender,description:req.body.description,phone:req.body.phone}}},
+
+       User.findByIdAndUpdate(query,{$push:{"postforroom":{$each:[{location:req.body.location,landmark:req.body.landmark,address:req.body.address,roomtype:req.body.roomtype,monthlyrent:req.body.monthlyrent,gender:req.body.gender,description:req.body.description,phone:req.body.phone}],$position : 0}}},
             {safe:true,upsert:true,new:true},
             function(err,info){
                 if(err){
@@ -637,6 +1026,8 @@ apiRoutes.post('/myroom',function(req,res){
     });
 });
 
+
+
 //User removing their own room
 
 apiRoutes.post('/removeroom',function(req,res){
@@ -656,6 +1047,46 @@ apiRoutes.post('/removeroom',function(req,res){
             });
         }
     });
+});
+
+//Searching All Rents
+
+apiRoutes.post('/allrent',function(req,res){
+  var a = User.find({"postforrent._id" : {$exists:true}} ,{"username":1,"email":1,"mobileno":1,"postforrent":1})
+
+  a.exec(function(err,info){
+      if(err){
+          res.json({
+              status : false,
+              message : "Error Occured" + err
+          });
+      }else{
+          res.json({
+              status : true,
+              message : info
+          });
+      }
+  });
+});
+
+//Searching All Rooms
+
+apiRoutes.post('/allroom',function(req,res){
+  var a = User.find({"postforroom._id" : {$exists:true}} ,{"username":1,"email":1,"mobileno":1,"postforroom":1})
+
+  a.exec(function(err,info){
+      if(err){
+          res.json({
+              status : false,
+              message : "Error Occured" + err
+          });
+      }else{
+          res.json({
+              status : true,
+              message : info
+          });
+      }
+  });
 });
 
 
@@ -694,7 +1125,10 @@ apiRoutes.post('/licenceupload',function(req,res){
 
 apiRoutes.post('/postforride',function(req,res){
     var query = req.headers['id'];
-    User.findByIdAndUpdate(query,{$push:{"postforride":{from:req.body.from,to:req.body.to,date:req.body.date,godate:req.body.godate,returndate:req.body.returndate,extraluggage:req.body.extraluggage,price:req.body.price,midwaydrop:req.body.midwaydrop,phone:req.body.phone}}},
+
+     //   User.findByIdAndUpdate(query,{$push:{"raiseticket":{$each:[{ticketid:ticket,complaint:complaint,description:description,imageurl:req.files}],$position:0}}})
+
+    User.findByIdAndUpdate(query,{$push:{"postforride":{$each:[{from:req.body.from,to:req.body.to,date:req.body.date,godate:req.body.godate,returndate:req.body.returndate,extraluggage:req.body.extraluggage,price:req.body.price,midwaydrop:req.body.midwaydrop,phone:req.body.phone}],$position : 0}}},
                 {safe:true,upsert:true,new:true},
                 function(err,info){
                 if(err){
@@ -861,11 +1295,100 @@ apiRoutes.post('/removeride',function(req,res){
     }); 
 });
 
+
+//Post For Garage
+
+apiRoutes.post('/postforgarage',function(req,res){
+    var query = req.headers['id'];
+    var adtitle = req.headers['adtitle'];
+    var category = req.headers['category'];
+    var price = req.headers['price'];
+    var field1 = req.headers['field1'];
+    var field2 = req.headers['field2'];
+    var field3 = req.headers['field3'];
+    var field4 = req.headers['field4'];
+    var description = req.headers['description'];
+    garageupload(req,res,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+
+
+            User.findByIdAndUpdate(query,{$push:{"garage":{$each:[{adtitle : adtitle,category : category,price : price,field1 : field1,field2 : field2,field3 : field3, field4 : field4,imageurl:req.files}],$position:0}}},
+            {safe:true,upsert:true,new:true},
+            function(err,info){
+                if(err){
+                    res.json({
+                        status: false,
+                        message : "Error Occured" + err
+                    });
+                }else{
+                    res.json({
+                        status : true,
+                        message : "Your ad has been added successfully"
+                    });
+                }
+            }
+          
+           );
+        }
+    });
+});
+
+
+//Searching All Garage
+
+apiRoutes.post('/allgarage',function(req,res){
+  var a = User.find({"postforrent._id" : {$exists:true}} ,{"username":1,"email":1,"mobileno":1,"postforgarage":1})
+
+  a.exec(function(err,info){
+      if(err){
+          res.json({
+              status : false,
+              message : "Error Occured" + err
+          });
+      }else{
+          res.json({
+              status : true,
+              message : info
+          });
+      }
+  });
+});
+
+
+
+// //Train Search
+
+// apiRoutes.post('/trainsearch',function(req,res){ 
+//     var time = req.body.departuretime;
+//     var a = Train.find({"mon":"y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0}).limit(6);
+//     a.exec(function(err,info){
+//         if(err){
+//             res.json({
+//                 status : false,
+//                 message : "Error Occured" + err
+//             });
+//         }else{
+//                 res.json({
+//                     status : true,
+//                     message : info
+//                 });
+//             }   
+//     }
+//     );
+    
+// });
+
+
 //Train Search
 
 apiRoutes.post('/trainsearch',function(req,res){ 
     var time = req.body.departuretime;
-    var a = Train.find({"mon":"y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0}).limit(6);
+    var a = Train.find({"mon":"y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0});
     a.exec(function(err,info){
         if(err){
             res.json({
@@ -883,9 +1406,33 @@ apiRoutes.post('/trainsearch',function(req,res){
     
 });
 
+
+// //Train Search on Sunday
+
+// apiRoutes.post('/trainsearchsun',function(req,res){
+//     var time = req.body.departuretime;
+//     var a = Train.find({"sun":"y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0}).limit(6); 
+//     a.exec(function(err,info){
+//         if(err){
+//             res.json({
+//                 status : false,
+//                 message : "Error Occured" + err
+//             });
+//         }else{
+//             res.json({
+//                 status : true,
+//                 message : info
+//             })
+//         }
+//     })
+// });
+
+
+//Train Search on Sunday
+
 apiRoutes.post('/trainsearchsun',function(req,res){
     var time = req.body.departuretime;
-    var a = Train.find({"sun":"y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0}).limit(6); 
+    var a = Train.find({"sun":"y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0}); 
     a.exec(function(err,info){
         if(err){
             res.json({
@@ -899,8 +1446,51 @@ apiRoutes.post('/trainsearchsun',function(req,res){
             })
         }
     })
-})
+});
 
+
+//Train Search Reverse
+
+apiRoutes.post('/revtrainsearch',function(req,res){ 
+    var time = req.body.departuretime;
+    var a = Revtrain.find({"mon":"Y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0});
+    a.exec(function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+                res.json({
+                    status : true,
+                    message : info
+                });
+            }   
+    }
+    );
+    
+});
+
+
+//Train Search on Sunday Reverse
+
+apiRoutes.post('/revtrainsearchsun',function(req,res){
+    var time = req.body.departuretime;
+    var a = Revtrain.find({"sun":"Y","departuretime":{$gte:time}},{"name":1,"departuretime":1,"arrivaltime":1,"_id":0}); 
+    a.exec(function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            })
+        }
+    })
+});
 
 //Licence Verification
 
@@ -944,6 +1534,30 @@ apiRoutes.post('/getcoupons',function(req,res){
 
 });
 
+//Show Coupon
+
+apiRoutes.post('/showcoupon',function(req,res){
+
+    var couponid = req.body.couponid ;
+    
+    Coupon.findById(couponid,{"coupons":1},function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    });
+
+});
+
+/*
+
 // Generate Coupons
 
 apiRoutes.post('/generatecoupon',function(req,res){
@@ -978,6 +1592,62 @@ apiRoutes.post('/generatecoupon',function(req,res){
     });
         
 });
+
+*/
+
+//Retrieve Autos
+
+apiRoutes.post('/getautos',function(req,res){
+    Auto.find({},{"pickuppoint":1,"droppoint":1,"rate":1},function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    });
+});
+
+// Retrieve Restaurant
+
+apiRoutes.post('/getrestaurants',function(req,res){
+    Restaurant.find({},{"restaurantname":1,"address":1,"openingtime":1,"logo":1,"viewmenu":1,"description":1,"mobileno":1},function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    });
+})
+
+// Retrieve Restaurant
+
+apiRoutes.post('/getretails',function(req,res){
+    Retail.find({},{"retailname":1,"retaildescription":1,"openingtime":1,"logo":1,"viewmenu":1,"description":1,"mobileno":1},function(err,info){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : info
+            });
+        }
+    });
+})
 
 
 apiRoutes.get('/',function(req,res){

@@ -6,9 +6,14 @@ var mongoose = require('mongoose');
 
 var jwt = require('jsonwebtoken');
 var config = require('./config');
+
 var User = require('./app/models/user');
 var Train = require('./app/models/train');
 var Coupon = require('./app/models/coupon');
+var Auto = require('./app/models/auto');
+var Restaurant = require('./app/models/restaurant');
+var Retail = require('./app/models/retail');
+var Revtrain = require('./app/models/revtrain');
 
 var options = {
     user : "Hari",

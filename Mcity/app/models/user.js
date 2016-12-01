@@ -55,6 +55,18 @@ var Coupons = new Schema({
     code : String
 });
 
+var Garage = new Schema({
+    adtitile : String,
+    category : String,
+    price : String,
+    field1 : String,
+    field2 : String,
+    field3 : String,
+    field4 : String,
+    description : String,
+    imageurl : Array
+});
+
 module.exports = mongoose.model('User',new Schema({
     username : String,
     mobileno : String,
@@ -66,6 +78,7 @@ module.exports = mongoose.model('User',new Schema({
     postforrent : [Postforrent],
     postforroom : [Postforroom],
     postforride : [Postforride],
-    coupons : [Coupons]
+    coupons : [Coupons],
+    garage : [Garage]
 }));
 
