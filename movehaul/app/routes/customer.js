@@ -5,6 +5,8 @@ var moment = require('moment');
 var multer = require('multer');
 var mime = require('mime');
 var nodemailer = require('nodemailer');
+var easyid = require('easyid');
+
 
 var validator = require('email-validator');
 var verifier = require('email-verify')
@@ -31,7 +33,7 @@ var smtpTransport = nodemailer.createTransport('smtps://movehaul.developer%40gma
 
 var bookinggoodsstorage = multer.diskStorage({
     destination : function(req,file,cb){
-        cb(null,'./public/bookinggoods');
+        cb(null,'C:/wamp64/www/movehaul/assets/img/booking_goods');
     },
     filename : function(req,file,cb){
         var datetimestamp = Date.now();
@@ -44,13 +46,65 @@ var bookinggoodsupload = multer({
 }).array('bookinggoods',5);
 
 
+
+
 module.exports = function(app){
+
+
+//Retrieving the Truck Details
+
+app.get('/truck_types/:name',function(req,res,next){
+    var options = {
+       // root : __dirname + /../ + /../ + 'public/driverupdate'
+          root : 'C:/wamp64/www/movehaul/assets/img/truck_types'
+    };
+
+    var filename = req.params.name;
+    res.sendFile(filename,options,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }
+        // else{
+        //     res.json({
+        //         status : true,
+        //         message : filename + "has been sent"
+        //     });
+        // }
+    });
+});
+
 
 // Customer Signup
 
 app.post('/customersignup',function(req,res){
+
     var created = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss')
-    var customersignup = {customer_name:req.body.customer_name,customer_mobile:req.body.customer_mobile,customer_email:req.body.customer_email,created_date:created};
+    
+     var num2 = easyid.generate({
+        groups : 1,
+        length : 2,
+        alphabet : '0123456789'
+    });
+
+    var char2 = easyid.generate({
+        groups : 1,
+        length : 2,
+        alphabet : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    });
+
+    var num1 = easyid.generate({
+        groups : 1,
+        length : 1,
+        alphabet : '0123456789'
+    });
+
+    var fake_id = "MOVC" + num2 + char2 + num1 ;
+    
+    
+    var customersignup = {customer_name:req.body.customer_name,customer_mobile:req.body.customer_mobile,customer_email:req.body.customer_email,created_date:created,fake_id : fake_id};
 
     pool.getConnection(function(err,connection){
         if(err){
@@ -74,7 +128,8 @@ app.post('/customersignup',function(req,res){
                              id : user.insertId,
                              customer_name : req.body.customer_name,
                              customer_mobile : req.body.customer_mobile,
-                             customer_email : req.body.customer_email
+                             customer_email : req.body.customer_email,
+                             fake_id : fake_id
                             },
                              message  : "You have been successfully Registered with MoveHaul"
                  });
@@ -450,7 +505,8 @@ apiRoutes.post('/mobilelogin',function(req,res){
                 }else{
                     var token = jwt.sign(mobile[0].customer_mobile,app.get('superSecret'));
 
-                    var id = mobile[0].customer_id ;
+                    var customer_id = mobile[0].customer_id ;
+                    var fake_id = mobile[0].fake_id ;
                     var customer_mobile = mobile[0].customer_mobile;
                     var customer_email = mobile[0].customer_email;
                     var customer_name = mobile[0].customer_name;
@@ -458,7 +514,8 @@ apiRoutes.post('/mobilelogin',function(req,res){
                     res.json({
                         status : true,
                         message : "Logged in successfully",
-                        id : id,
+                        customer_id : customer_id,
+                        fake_id : fake_id,
                         customer_mobile : customer_mobile,
                         customer_email : customer_email,
                         customer_name : customer_name,
@@ -502,7 +559,8 @@ apiRoutes.post('/emaillogin',function(req,res){
                 }else{
                     var token = jwt.sign(email[0].customer_mobile,app.get('superSecret'));
 
-                    var id = email[0].customer_id ;
+                    var customer_id = email[0].customer_id ;
+                    var fake_id = email[0].fake_id ;
                     var customer_mobile = email[0].customer_mobile;
                     var customer_email = email[0].customer_email;
                     var customer_name = email[0].customer_name;
@@ -510,7 +568,8 @@ apiRoutes.post('/emaillogin',function(req,res){
                     res.json({
                         status : true,
                         message : "Logged in successfully",
-                        id : id,
+                        customer_id : id,
+                        fake_id : fake_id,
                         customer_mobile : customer_mobile,
                         customer_email : customer_email,
                         customer_name : customer_name,
@@ -824,10 +883,57 @@ apiRoutes.post('/booking',function(req,res){
     var drop_location = req.headers['drop_location'] || req.body.drop_location ;
     var goods_type = req.headers['goods_type'] || req.body.goods_type ;
     var truck_type = req.headers['truck_type'] || req.body.truck_type ;
+    var description = req.headers['description'] || req.body.description ;
     var booking_time = req.headers['booking_time'] || req.body.booking_time ;
-    var goods_image1 = req.body.goods_image1 ;
-    var goods_image2 = req.body.goods_image2 ;
- 
+
+
+    
+//bookinggoods 
+                                if(req.files.bookinggoods == undefined){
+                                    function bookingGoods1(){
+                                        return bookinggoods1 = "null" ;
+                                    }
+                                    function bookingGoods2(){
+                                        return bookinggoods2 = "null" ;
+                                    }
+                                        var bookinggoods1 = bookingGoods1()
+                                        var bookinggoods2 = bookingGoods2()
+                                }else if(req.files.bookinggoods.length == 1){
+//bookinggoods1  
+                                        function bookingGoods1(){
+                                        if(typeof req.files.bookinggoods[0].filename !== undefined){
+                                        return bookinggoods1 = req.files.bookinggoods[0].filename
+                                        }
+                                        }
+                                var bookinggoods1 = bookingGoods1()
+                                }else if(req.files.bookinggoods.length == 2){
+//bookinggoods2
+                                        function bookingGoods1(){
+                                        if(typeof req.files.bookinggoods[0].filename !== undefined){
+                                        return bookinggoods1 = req.files.bookinggoods[0].filename
+                                        }
+                                        }
+//bookinggoods2 
+                                        function bookingGoods2(){      
+                                        if(typeof req.files.bookinggoods[1].filename !== undefined){
+                                        return bookinggoods2 = req.files.bookinggoods[1].filename
+                                        }
+                                        }
+                                        var bookinggoods1 = bookingGoods1()
+                                        var bookinggoods2 = bookingGoods2()
+                                }else{
+                                    console.log("No vehicle title image has been attached");
+                                }
+                                     
+
+
+
+
+
+
+
+
+
 
     pool.getConnection(function(err,connection){
         if(err) throw err ;
@@ -840,7 +946,7 @@ apiRoutes.post('/booking',function(req,res){
                 message : "Error Occured" + err
             });
         }else{
-            connection.query('INSERT INTO bookings SET customer_id = ?,pickup_location = ?,drop_location = ?, goods_type = ?, truck_type = ?,description = ?,goods_image1 = ?,goods_image2 = ?',[customer_id,pickup_location,drop_location,goods_type,truck_type,goods_image1,goods_image2],function(err,save){
+            connection.query('INSERT INTO bookings SET customer_id = ?,pickup_location = ?,drop_location = ?, goods_type = ?, truck_type = ?,description = ?,booking_time = ?,radius = ?,job_status = ?,goods_image1 = ?,goods_image2 = ?',[customer_id,pickup_location,drop_location,goods_type,truck_type,description,booking_time,"ten","waiting",bookinggoods1,bookinggoods2],function(err,book){
                 if(err){
                     res.json({
                         status :false,
@@ -849,7 +955,8 @@ apiRoutes.post('/booking',function(req,res){
                 }else{
                     res.json({
                         status : true,
-                        message : "Your Post has been added successfully"
+                        message : "Your Post has been added successfully",
+                        booking_id : book.booking_id
                     });
                 }
         });
@@ -860,6 +967,112 @@ apiRoutes.post('/booking',function(req,res){
             connection.release();
     })
 })
+
+
+
+//Customer Reviewing Jobs
+
+apiRoutes.post('/showcurrentjob',function(req,res){
+
+    var customer_id = req.headers['id'];
+    
+    var booking_id = req.body.booking_id ;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                code : 100,
+                message : "Error in connecting Database"
+            })
+        }
+
+    
+    connection.query('SELECT * FROM bookings WHERE booking_id = ?',[booking_id],function(err,job){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                jobs : job
+            });
+        }
+
+    });
+
+        connection.release();
+    })
+});
+
+
+
+
+//Customer viewing Bidding/Drivers List
+
+apiRoutes.post('/driverslist',function(req,res){
+
+    var customer_id = req.headers['id'];
+
+    var booking_id = req.body.booking_id ;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                code : 100,
+                message : "Error in connecting Database"
+            })
+        }
+
+    
+    connection.query('SELECT * FROM job_bidding WHERE booking_id = ?',[booking_id],function(err,job){
+        if(err) throw err ;
+
+        if(job == 0){
+            res.json({
+                status : false,
+                message : "No jo listed here"
+            })
+        }else if(job != 0){
+
+                  function driverId(){
+                  var driver_id = [];
+
+                  for(var i=0;i<job.length;i++){
+                             driver_id.push(job[i].driver_id) ;
+                  }
+                  return  driver_id ;
+                  }             
+
+
+    connection.query('SELECT driver.driver_id,driver.driver_image,truck.truck_id,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side FROM driver,truck WHERE driver.driver_id = ?',[driverId().join()],function(err,details){
+    
+    
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                message : details
+            })
+        }
+    });
+               
+
+                    }
+           
+
+
+    });
+
+        connection.release();
+    })
+});
+
 
 
 

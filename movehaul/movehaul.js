@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
+var path = require('path');
 
 var jwt = require('jsonwebtoken');
 var config = require('./config');
@@ -13,6 +14,8 @@ app.set('superSecret',config.secret);
 
 app.use(express.static('public'));
 app.use('/uploads',express.static(__dirname + '/uploads'));
+
+app.use('/img',express.static(__dirname + 'C:/wamp64/www/movehaul/assets/img'));
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());

@@ -5,6 +5,7 @@ var moment = require('moment');
 var multer = require('multer');
 var mime = require('mime');
 var nodemailer = require('nodemailer');
+var easyid = require('easyid');
 
 var verifier = require('email-verify');
 
@@ -29,7 +30,7 @@ var smtpTransport = nodemailer.createTransport('smtps://movehaul.developer%40gma
 
 var driverlicencestorage = multer.diskStorage({
     destination : function(req,file,cb){
-        cb(null,'./public/driverdetails');
+        cb(null,'C:/wamp64/www/movehaul/assets/img/driver_details');
     },
     filename : function(req,file,cb){
         var datetimestamp = Date.now();
@@ -45,7 +46,7 @@ var driverlicenceupload = multer({
 
 var driverupdatestorage = multer.diskStorage({
     destination : function(req,file,cb){
-        cb(null,'./public/driverdetails');
+        cb(null,'C:/wamp64/www/movehaul/assets/img/driver_details');
     },
     filename : function(req,file,cb){
         var datetimestamp = Date.now();
@@ -63,7 +64,7 @@ var driverupdateupload = multer({
 
 var vehicleupdatestorage = multer.diskStorage({
     destination : function(req,file,cb){
-        cb(null,'./public/vehicledetails');
+        cb(null,'C:/wamp64/www/movehaul/assets/img/vehicle_details');
     },
     filename : function(req,file,cb){
         var datetimestamp = Date.now();
@@ -86,14 +87,17 @@ var vehicleupdateupload = multer({
     name : 'vehicleinsurance', maxCount : 2
 }]);
 
-module.exports = function(app){
 
+
+module.exports = function(app){
+ 
 
 //Retrieving the Driver Licence documents    
 
-app.get('/driverdetails/:name',function(req,res,next){
+app.get('/driver_details/:name',function(req,res,next){
     var options = {
-        root : __dirname
+        //root : __dirname
+        root : 'C:/wamp64/www/movehaul/assets/img/driver_details'
     };
 
     var filename = req.params.name;
@@ -103,12 +107,13 @@ app.get('/driverdetails/:name',function(req,res,next){
                 status : false,
                 message : "Error Occured" + err
             });
-        }else{
-            res.json({
-                status : true,
-                message : filename + "has been sent"
-            });
         }
+        // else{
+        //     res.json({
+        //         status : true,
+        //         message : filename + "has been sent"
+        //     });
+        // }
     });
 });
 
@@ -137,10 +142,11 @@ app.get('/driverdetails/:name',function(req,res,next){
 
 //Retrieving the Updated Vehicle Details 
 
-app.get('/vehicledetails/:name',function(req,res,next){
+app.get('/vehicle_details/:name',function(req,res,next){
     var options = {
        // root : __dirname + /../ + /../ + 'public/driverupdate'
-          root : __dirname
+       // root : __dirname
+    root : 'C:/wamp64/www/movehaul/assets/img/vehicle_details'
     };
 
     var filename = req.params.name;
@@ -150,20 +156,73 @@ app.get('/vehicledetails/:name',function(req,res,next){
                 status : false,
                 message : "Error Occured" + err
             });
-        }else{
-            res.json({
-                status : true,
-                message : filename + "has been sent"
-            });
         }
+        // else{
+        //     res.json({
+        //         status : true,
+        //         message : filename + "has been sent"
+        //     });
+        // }
     });
 });
+
+
+// //Retrieving the Updated Details - Trial
+
+// app.get('/driver_details/:name',function(req,res,next){
+//     var options = {
+//        // root : __dirname + /../ + /../ + 'public/driverupdate'
+//           root : 'C:/wamp64/www/movehaul/assets/img/driver_details'
+//     };
+
+//     var filename = req.params.name;
+//     res.sendFile(filename,options,function(err){
+//         if(err){
+//             res.json({
+//                 status : false,
+//                 message : "Error Occured" + err
+//             });
+//         }
+//         // else{
+//         //     res.json({
+//         //         status : true,
+//         //         message : filename + "has been sent"
+//         //     });
+//         // }
+//     });
+// });
+
+
 
 // Driver Signup
 
 app.post('/driversignup',function(req,res){
+
     var created = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss')
-    var driversignup = {driver_name:req.headers['driver_name'],driver_mobile_pri:req.headers['driver_mobile_pri'],driver_email:req.headers['driver_email'],driver_mobile_sec:req.headers['driver_mobile_sec'],driver_experience:req.headers['driver_experience'],driver_licence_name:req.headers['driver_licence_name'],driver_licence_number:req.headers['driver_licence_number'],driver_licence_image:req.files,created_date:created,driver_operated_by:"movehaul",driver_verification:"pending",driver_status:"inactive",account_status:"inactive"};
+
+    var num2 = easyid.generate({
+        groups : 1,
+        length : 2,
+        alphabet : '0123456789'
+    });
+
+    var char2 = easyid.generate({
+        groups : 1,
+        length : 2,
+        alphabet : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    });
+
+    var num1 = easyid.generate({
+        groups : 1,
+        length : 1,
+        alphabet : '0123456789'
+    });
+
+    var fake_id = "MOVD" + num2 + char2 + num1 ;
+
+    var driversignup = {driver_name:req.headers['driver_name'],driver_mobile_pri:req.headers['driver_mobile_pri'],driver_email:req.headers['driver_email'],driver_mobile_sec:req.headers['driver_mobile_sec'],driver_experience:req.headers['driver_experience'],driver_licence_name:req.headers['driver_licence_name'],driver_licence_number:req.headers['driver_licence_number'],driver_licence_image:req.files,created_date:created,driver_operated_by:"movehaul",driver_verification:"pending",driver_status:"inactive",account_status:"inactive",fake_id : fake_id};
+
+    
 
     driverlicenceupload(req,res,function(err){
         if(err){
@@ -503,6 +562,7 @@ apiRoutes.post('/mobilelogin',function(req,res){
                     var token = jwt.sign(mobile[0].driver_mobile_pri,app.get('superSecret'));
 
                     var driver_id = mobile[0].driver_id ;
+                    var fake_id = mobile[0].fake_id ;
                     var driver_mobile = mobile[0].driver_mobile_pri;
                     var driver_email = mobile[0].driver_email;
                     var driver_name = mobile[0].driver_name;
@@ -522,6 +582,7 @@ apiRoutes.post('/mobilelogin',function(req,res){
                         status : true,
                         message : "Logged in successfully",
                         driver_id : driver_id,
+                        fake_id : fake_id,
                         driver_mobile : driver_mobile,
                         driver_email : driver_email,
                         driver_name : driver_name,
@@ -535,16 +596,20 @@ apiRoutes.post('/mobilelogin',function(req,res){
 
                 }else if(truck != 0){
                  
-                  
-                    var truck_title_image1 = truck[0].truck_title_image ;
-                    var truck_title_image2 = truck[1].truck_title_image ;
-                    var truck_insurance_image1 = truck[0].truck_insurance_image ;
-                    var truck_insurance_image2 = truck[1].truck_insurance_image ;
-                    
+                    var truck_image_front = truck[0].truck_image_front;
+                    var truck_image_back = truck[0].truck_image_back;
+                    var truck_image_side = truck[0].truck_image_side;
+                    var truck_title_image1 = truck[0].truck_title_image1 ;
+                    var truck_title_image2 = truck[0].truck_title_image2 ;
+                    var truck_insurance_image1 = truck[0].truck_insurance_image1 ;
+                    var truck_insurance_image2 = truck[0].truck_insurance_image2 ;
+                    var truck_verification = truck[0].truck_verification ; 
+
                  res.json({
                         status : true,
                         message : "Logged in successfully",
                         driver_id : driver_id,
+                        fake_id : fake_id,
                         driver_mobile : driver_mobile,
                         driver_email : driver_email,
                         driver_name : driver_name,
@@ -553,14 +618,17 @@ apiRoutes.post('/mobilelogin',function(req,res){
                         driver_verification : driver_verification,
                         driver_status : driver_status,
                         account_status : account_status,
+                        truck_image_front : truck_image_front,
+                        truck_image_back : truck_image_back,
+                        truck_image_side : truck_image_side,
                         truck_title_image1 : truck_title_image1,
                         truck_title_image2 : truck_title_image2,
                         truck_insurance_image1 : truck_insurance_image1,
                         truck_insurance_image2 : truck_insurance_image2,
+                        truck_verification : truck_verification,
                         token : token
                     });
 
-                    console.log(truck);
                 }
             });
                 }
@@ -604,6 +672,7 @@ apiRoutes.post('/emaillogin',function(req,res){
                     var token = jwt.sign(email[0].driver_mobile,app.get('superSecret'));
 
                     var driver_id = email[0].driver_id ;
+                    var fake_id = email[0].fake_id ;
                     var driver_mobile = email[0].driver_mobile_pri;
                     var driver_email = email[0].driver_email;
                     var driver_name = email[0].driver_name;
@@ -638,10 +707,14 @@ apiRoutes.post('/emaillogin',function(req,res){
                 }else if(truck != 0){
                  
                   
-                    var truck_title_image1 = truck[0].truck_title_image ;
-                    var truck_title_image2 = truck[1].truck_title_image ;
-                    var truck_insurance_image1 = truck[0].truck_insurance_image ;
-                    var truck_insurance_image2 = truck[1].truck_insurance_image ;
+                    var truck_image_front = truck[0].truck_image_front;
+                    var truck_image_back = truck[0].truck_image_back;
+                    var truck_image_side = truck[0].truck_image_side;
+                    var truck_title_image1 = truck[0].truck_title_image1 ;
+                    var truck_title_image2 = truck[0].truck_title_image2 ;
+                    var truck_insurance_image1 = truck[0].truck_insurance_image1 ;
+                    var truck_insurance_image2 = truck[0].truck_insurance_image2 ;
+                    var truck_verification = truck[0].truck_verification ; 
                     
                  res.json({
                         status : true,
@@ -659,6 +732,7 @@ apiRoutes.post('/emaillogin',function(req,res){
                         truck_title_image2 : truck_title_image2,
                         truck_insurance_image1 : truck_insurance_image1,
                         truck_insurance_image2 : truck_insurance_image2,
+                        truck_verification : truck_verification,
                         token : token
                     });
 
@@ -731,7 +805,6 @@ apiRoutes.post('/driverupdate',function(req,res){
                 }else{
 
 
-                             
 
 //
                                 if(req.files == undefined ){
@@ -811,14 +884,18 @@ apiRoutes.post('/vehicleupdate',function(req,res){
 
 
 
+                             
 //
-                                if(req.files.vehiclefront.length == 1){
+                                if(req.files.vehiclefront == undefined){
 //vehiclefront
+                                    function vehicleFront(){
+                                        return vehiclefront = "null" ;
+                                    }
+                                    var vehiclefront = vehicleFront()
+                                }else if(req.files.vehiclefront.length == 1){
                                 function vehicleFront(){
                                      if(typeof req.files.vehiclefront[0].filename !== undefined){
                                     return vehiclefront = req.files.vehiclefront[0].filename
-                                }else{
-                                    return vehiclefront = "null"
                                 }
                                 }
                                 var vehiclefront = vehicleFront()
@@ -827,30 +904,38 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 }
 
 
+                            
 //
-                                if(req.files.vehicleback.length == 1){
+                                if(req.files.vehicleback == undefined){
 //vehicleback
+                                    function vehicleBack(){
+                                        return vehicleback = "null" ;
+                                    }
+                                    var vehicleback = vehicleBack()
+                                }else if(req.files.vehicleback.length == 1){
                                 function vehicleBack(){
                                      if(typeof req.files.vehicleback[0].filename !== undefined){
                                     return vehicleback = req.files.vehicleback[0].filename
-                                }else{
-                                    return vehicleback = "null"
                                 }
                                 }
                                 var vehicleback = vehicleBack()
                                 }else{
-                                    console.log("No vehicle Back image has been attached");
+                                    console.log("No vehicle back image has been attached");
                                 }
 
 
+                            
 //
-                                if(req.files.vehicleside.length == 1){
+                                if(req.files.vehicleside == undefined){
 //vehicleside
+                                    function vehicleSide(){
+                                        return vehicleside = "null" ;
+                                    }
+                                    var vehicleside = vehicleSide()
+                                }else if(req.files.vehicleside.length == 1){
                                 function vehicleSide(){
                                      if(typeof req.files.vehicleside[0].filename !== undefined){
                                     return vehicleside = req.files.vehicleside[0].filename
-                                }else{
-                                    return vehicleside = "null"
                                 }
                                 }
                                 var vehicleside = vehicleSide()
@@ -858,24 +943,37 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                     console.log("No vehicle side image has been attached");
                                 }
 
-//vehicletitle      
-                               if(req.files.vehicletitle.length == 1){
+
+
+//vehicletitle 
+                                if(req.files.vehicletitle == undefined){
+                                    function vehicleTitle1(){
+                                        return vehicletitle1 = "null" ;
+                                    }
+                                    function vehicleTitle2(){
+                                        return vehicletitle2 = "null" ;
+                                    }
+                                        var vehicletitle1 = vehicleTitle1()
+                                        var vehicletitle2 = vehicleTitle2()
+                                }else if(req.files.vehicletitle.length == 1){
 //vehicletitle1  
                                         function vehicleTitle1(){
                                         if(typeof req.files.vehicletitle[0].filename !== undefined){
                                         return vehicletitle1 = req.files.vehicletitle[0].filename
-                                        }else{
-                                        return vehicletitle1 = "null"
                                         }
                                         }
                                 var vehicletitle1 = vehicleTitle1()
                                 }else if(req.files.vehicletitle.length == 2){
+//vehicletitle2
+                                        function vehicleTitle1(){
+                                        if(typeof req.files.vehicletitle[0].filename !== undefined){
+                                        return vehicletitle1 = req.files.vehicletitle[0].filename
+                                        }
+                                        }
 //vehicletitle2 
                                         function vehicleTitle2(){      
                                         if(typeof req.files.vehicletitle[1].filename !== undefined){
                                         return vehicletitle2 = req.files.vehicletitle[1].filename
-                                        }else{
-                                        return vehicletitle2 = "null"
                                         }
                                         }
                                         var vehicletitle1 = vehicleTitle1()
@@ -883,36 +981,50 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 }else{
                                     console.log("No vehicle title image has been attached");
                                 }
-                              
+            
 
-//vehicleinsurance       
-                               if(req.files.vehicleinsurance.length == 1){
+
+
+//vehicleinsurance 
+                                if(req.files.vehicleinsurance == undefined){
+                                    function vehicleInsurance1(){
+                                        return vehicleinsurance1 = "null" ;
+                                    }
+                                    function vehicleInsurance2(){
+                                        return vehicleinsurance2 = "null" ;
+                                    }
+                                        var vehicleinsurance1 = vehicleInsurance1()
+                                        var vehicleinsurance2 = vehicleInsurance2()
+                                }else if(req.files.vehicleinsurance.length == 1){
 //vehicleinsurance1  
                                         function vehicleInsurance1(){
                                         if(typeof req.files.vehicleinsurance[0].filename !== undefined){
                                         return vehicleinsurance1 = req.files.vehicleinsurance[0].filename
-                                        }else{
-                                        return vehicleinsurance1 = "null"
                                         }
                                         }
                                 var vehicleinsurance1 = vehicleInsurance1()
                                 }else if(req.files.vehicleinsurance.length == 2){
+//vehicleinsurance2
+                                        function vehicleInsurance1(){
+                                        if(typeof req.files.vehicleinsurance[0].filename !== undefined){
+                                        return vehicleinsurance1 = req.files.vehicleinsurance[0].filename
+                                        }
+                                        }
 //vehicleinsurance2 
                                         function vehicleInsurance2(){      
                                         if(typeof req.files.vehicleinsurance[1].filename !== undefined){
                                         return vehicleinsurance2 = req.files.vehicleinsurance[1].filename
-                                        }else{
-                                        return vehicleinsurance2 = "null"
                                         }
                                         }
-                                        var vehicleinsurance1 = vehicleInsurance1()
-                                        var vehicleinsurance2 = vehicleInsurance2()
+                                        var vehicleinsurance1 = vehicleinsurance1()
+                                        var vehicleinsurance2 = vehicleinsurance2()
                                 }else{
                                     console.log("No vehicle insurance image has been attached");
                                 }
+            
                                
 
-                        connection.query('INSERT INTO truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ?,truck_title_image1 = ?,truck_title_image2 = ?,truck_insurance_image1 = ?,truck_insurance_image2 = ?,driver_id = ?',[vehiclefront,vehicleback,vehicleside,vehicletitle1,vehicletitle2,vehicleinsurance1,vehicleinsurance2,driver_id],function(err,save){
+                        connection.query('INSERT INTO truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ?,truck_title_image1 = ?,truck_title_image2 = ?,truck_insurance_image1 = ?,truck_insurance_image2 = ?,driver_id = ?,truck_verification = ?',[vehiclefront,vehicleback,vehicleside,vehicletitle1,vehicletitle2,vehicleinsurance1,vehicleinsurance2,driver_id,"pending"],function(err,save){
                            
 
                             if(err){
@@ -937,12 +1049,15 @@ apiRoutes.post('/vehicleupdate',function(req,res){
 
                     }else if(truck !=0 ){
 
+            
 
+            
+                                                                 
 //
                                 if(req.files.vehiclefront == undefined){
 //vehiclefront
                                     function vehicleFront(){
-                                        return vehiclefront == truck[0].truck_image_front ;
+                                        return vehiclefront = truck[0].truck_image_front ;
                                     }
                                     var vehiclefront = vehicleFront()
                                 }else if(req.files.vehiclefront.length == 1){
@@ -959,11 +1074,16 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 }
 
 
+                             
+
+
+
+                            
 //
                                 if(req.files.vehicleback == undefined){
 //vehicleback
                                     function vehicleBack(){
-                                        return vehicleback == truck[0].truck_image_back ;
+                                        return vehicleback = truck[0].truck_image_back ;
                                     }
                                     var vehicleback = vehicleBack()
                                 }else if(req.files.vehicleback.length == 1){
@@ -978,13 +1098,17 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 }else{
                                     console.log("No vehicle Back image has been attached");
                                 }
+                                
+
+                           
 
 
+                                                                 
 //
                                 if(req.files.vehicleside == undefined){
 //vehicleside
                                     function vehicleSide(){
-                                        return vehicleside == truck[0].truck_image_side ;
+                                        return vehicleside = truck[0].truck_image_side ;
                                     }
                                     var vehicleside = vehicleSide()
                                 }else if(req.files.vehicleside.length == 1){
@@ -999,17 +1123,20 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 }else{
                                     console.log("No vehicle side image has been attached");
                                 }
+                                
 
+
+                         
 
 
 
 //vehicletitle 
                                 if(req.files.vehicletitle == undefined){
                                     function vehicleTitle1(){
-                                        return vehicletitle1 == truck[0].truck_title_image1 ;
+                                        return vehicletitle1 = truck[0].truck_title_image1 ;
                                     }
                                     function vehicleTitle2(){
-                                        return vehicletitle2 == truck[0].truck_title_image2 ;
+                                        return vehicletitle2 = truck[0].truck_title_image2 ;
                                     }
                                         var vehicletitle1 = vehicleTitle1()
                                         var vehicletitle2 = vehicleTitle2()
@@ -1049,13 +1176,15 @@ apiRoutes.post('/vehicleupdate',function(req,res){
 
 
 
+
+
 //vehicleinsurance 
                                 if(req.files.vehicleinsurance == undefined){
                                     function vehicleInsurance1(){
-                                        return vehicleinsurance1 == truck[0].truck_insurance_image1 ;
+                                        return vehicleinsurance1 = truck[0].truck_insurance_image1 ;
                                     }
                                     function vehicleInsurance2(){
-                                        return vehicleinsurance2 == truck[0].truck_insurance_image2 ;
+                                        return vehicleinsurance2 = truck[0].truck_insurance_image2 ;
                                     }
                                         var vehicleinsurance1 = vehicleInsurance1()
                                         var vehicleinsurance2 = vehicleInsurance2()
@@ -1092,7 +1221,12 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 }else{
                                     console.log("No vehicle insurance image has been attached");
                                 }
-                                 
+
+
+
+
+                            
+
 
                     connection.query('UPDATE truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ?,truck_title_image1 = ?,truck_title_image2 = ?,truck_insurance_image1 = ?,truck_insurance_image2 = ? WHERE driver_id',[vehiclefront,vehicleback,vehicleside,vehicletitle1,vehicletitle2,vehicleinsurance1,vehicleinsurance2,driver_id],function(err,save){
                             if (err){
@@ -1606,6 +1740,75 @@ apiRoutes.post('/location',function(req,res){
 });
 
 
+//Driver viewing Jobs
+
+apiRoutes.post('/showjobs',function(req,res){
+
+    var driver_id = req.headers['id'];
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                code : 100,
+                message : "Error in connecting Database"
+            })
+        }
+
+    
+    connection.query('SELECT * FROM bookings WHERE job_status = ?',["waiting"],function(err,job){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status : true,
+                jobs : job
+            });
+        }
+
+    });
+
+        connection.release();
+    })
+});
+
+
+
+// Driver Bidding for Job
+
+apiRoutes.post('/jobbidding',function(req,res){
+
+    var driver_id = req.headers['id'];
+
+    var booking_id = req.body.booking_id ;
+    var bidding_cost = req.body.bidding_cost ;
+    var bidding_time = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss')
+
+    pool.getConnection(function(err,connection){
+        if(err) throw err ;
+
+
+
+            connection.query('INSERT INTO job_bidding SET driver_id = ?,booking_id = ?,bidding_cost = ?,bidding_time = ?',[driver_id,booking_id,bidding_cost,bidding_time],function(err,save){
+                if(err){
+                    res.json({
+                        status :false,
+                        message : "Error Occured" + err
+                    })
+                }else{
+                    res.json({
+                        status : true,
+                        message : "You have successfully bidded for the job"
+                    });
+                }
+        });
+
+    
+            connection.release();
+    })
+});
 
 
 
