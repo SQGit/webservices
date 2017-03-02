@@ -3,14 +3,18 @@ var moment = require('moment');
 
 var Schema = mongoose.Schema;
 
-var Coupons = new Schema({
-    code : String
-});
 
 module.exports = mongoose.model('Coupon',new Schema({
-    shopname : String,
-    expireddate : String,
-    descripton : String,
-    coupons : [Coupons],
-    logo : Array
+    coupon_type: String,
+    coupon_code: String,
+    coupon_name: String,
+    coupon_prefix: String,
+    coupon_desc: String,
+    users: String,
+    usage_limit: String,
+    no_of_coupon: String,
+    coupon_start_date: String,
+    coupon_expiry_date: String,
+    shop_id: String,
+    used_by: Array
 }));

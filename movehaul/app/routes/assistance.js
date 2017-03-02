@@ -23,7 +23,7 @@ var client = twilio(accountSid,authToken);
 
 //Nodemailer Configuration
 
-var smtpTransport = nodemailer.createTransport('smtps://movehaul.developer%40gmail.com:Noble_123@smtp.gmail.com');
+var smtpTransport = nodemailer.createTransport('smtps://movehaul.developer%40gmail.com:Noble_1234@smtp.gmail.com');
 
 
 //Driver Licence Image
@@ -89,8 +89,14 @@ var vehicleupdateupload = multer({
 
 
 
+
+
 module.exports = function(app){
- 
+
+
+
+
+
 
 //Retrieving the Driver Licence documents    
 
@@ -108,37 +114,12 @@ app.get('/driver_details/:name',function(req,res,next){
                 message : "Error Occured" + err
             });
         }
-        // else{
-        //     res.json({
-        //         status : true,
-        //         message : filename + "has been sent"
-        //     });
-        // }
+        else{
+           console.log(filename +" has been sent")
+        }
     });
 });
 
-// //Retrieving the Updated Driver Details 
-
-// app.get('/driverdetails/:name',function(req,res,next){
-//     var options = {
-//        // root : __dirname + /../ + /../ + 'public/driverupdate'
-//           root : __dirname
-//     };
-//     var filename = req.params.name;
-//     res.sendFile(filename,options,function(err){
-//         if(err){
-//             res.json({
-//                 status : false,
-//                 message : "Error Occured" + err
-//             });
-//         }else{
-//             res.json({
-//                 status : true,
-//                 message : filename + "has been sent"
-//             });
-//         }
-//     });
-// });
 
 //Retrieving the Updated Vehicle Details 
 
@@ -157,40 +138,13 @@ app.get('/vehicle_details/:name',function(req,res,next){
                 message : "Error Occured" + err
             });
         }
-        // else{
-        //     res.json({
-        //         status : true,
-        //         message : filename + "has been sent"
-        //     });
-        // }
+        else{
+          console.log(filename +" has been sent")
+        }
     });
 });
 
 
-// //Retrieving the Updated Details - Trial
-
-// app.get('/driver_details/:name',function(req,res,next){
-//     var options = {
-//        // root : __dirname + /../ + /../ + 'public/driverupdate'
-//           root : 'C:/wamp64/www/movehaul/assets/img/driver_details'
-//     };
-
-//     var filename = req.params.name;
-//     res.sendFile(filename,options,function(err){
-//         if(err){
-//             res.json({
-//                 status : false,
-//                 message : "Error Occured" + err
-//             });
-//         }
-//         // else{
-//         //     res.json({
-//         //         status : true,
-//         //         message : filename + "has been sent"
-//         //     });
-//         // }
-//     });
-// });
 
 
 
@@ -220,7 +174,7 @@ app.post('/driversignup',function(req,res){
 
     var fake_id = "MOVD" + num2 + char2 + num1 ;
 
-    var driversignup = {driver_name:req.headers['driver_name'],driver_mobile_pri:req.headers['driver_mobile_pri'],driver_email:req.headers['driver_email'],driver_mobile_sec:req.headers['driver_mobile_sec'],driver_experience:req.headers['driver_experience'],driver_licence_name:req.headers['driver_licence_name'],driver_licence_number:req.headers['driver_licence_number'],driver_licence_image:req.files,created_date:created,driver_operated_by:"movehaul",driver_verification:"pending",driver_status:"inactive",account_status:"inactive",fake_id : fake_id};
+    var driversignup = {driver_name:req.headers['driver_name'],driver_mobile_pri:req.headers['driver_mobile_pri'],driver_email:req.headers['driver_email'],driver_mobile_sec:req.headers['driver_mobile_sec'],driver_experience:req.headers['driver_experience'],driver_licence_name:req.headers['driver_licence_name'],driver_licence_number:req.headers['driver_licence_number'],driver_licence_image:req.files,created_date:created,driver_job_status:"free",driver_operated_by:"movehaul",driver_verification:"pending",driver_status:"inactive",account_status:"inactive",fake_id : fake_id,fcm_id:req.headers['fcm_id'],vehicle_type: req.headers['vehicle_type']};
 
     
 
@@ -262,7 +216,6 @@ app.post('/driversignup',function(req,res){
                 });
 
 
-
                  }
                 });
                 connection.release();
@@ -275,11 +228,14 @@ app.post('/driversignup',function(req,res){
 
 
 
-//Trial Driver Mobile OTP
+
+//Assistance Driver Mobile OTP
 
 app.post('/drivermobileotp',function(req,res){
     var drivermobile = req.body.driver_mobile ;
     var otp = Math.floor(Math.random()*9000)+1000;
+
+    var fcm_id = req.body.fcm_id ;
 
     pool.getConnection(function(err,connection){
         if(err){
@@ -354,15 +310,20 @@ app.post('/drivermobileotp',function(req,res){
                 from : '+12014740491'
             },function(err,message){
                 if(err){
+                     var vehicle_type = mobile[0].vehicle_type
                     res.json({
                         status : false,
-                        message : "Error Occured" + err
+                        message : "Error Occured" + err,
+                        vehicle_type : vehicle_type
                     });
                 }
                       else{
+                                 var vehicle_type = mobile[0].vehicle_type
+
                                 res.json({
                                     status : true,
-                                    message : message.sid
+                                    message : message.sid,
+                                    vehicle_type : vehicle_type
                     });
 
                         }
@@ -382,8 +343,10 @@ app.post('/drivermobileotp',function(req,res){
         }else{
             res.json({
                 status : false,
+                message: {
                 driver_verification : mobile[0].driver_verification,
                 account_status : mobile[0].account_status 
+                }
             })
         }
         
@@ -395,63 +358,6 @@ app.post('/drivermobileotp',function(req,res){
     })
 })
 
-
-
-// //Driver Mobile OTP
-
-// app.post('/drivermobileotp---',function(req,res){
-//     var drivermobile = req.body.driver_mobile ;
-//     var otp = Math.floor(Math.random()*9000)+1000;
-
-//       pool.getConnection(function(err,connection){
-//         if(err){
-//             res.json({
-//                 code : 100,
-//                 status : "Error in connecting Database"
-//             });
-//         }
-
-//         connection.query('SELECT * FROM driver WHERE driver_mobile_pri = ?',[drivermobile],function(err,mobile){
-//         if(err) throw err ;
-
-//         if(mobile == 0){
-//                 res.json({
-//                 status : false,
-//                 message : "Register with Movehaul first to Generate OTP"
-//             });      
-//         }else{
-//             client.messages.create({
-//                 body : "Your MoveHaul OTP is" + " " + otp,
-//                 to : drivermobile,
-//                 from : '+12014740491'
-//             },function(err,message){
-//                 if(err){
-//                     res.json({
-//                         status : false,
-//                         message : "Error Occured" + err
-//                     });
-//                 }else{
-//                     connection.query('UPDATE driver SET driver_otp = ? WHERE driver_mobile_pri = ?',[otp,drivermobile],function(err,save){
-//                         if(err){
-//                             res.json({
-//                                 status : false,
-//                                 message : "Error Occured" + err
-//                             });
-//                         }else{
-//                                 res.json({
-//                                     status : true,
-//                                     message : message.sid
-//                     });
-
-//                         }
-//                     });
-//                 }
-//             });  
-//         }
-//     });
-//     connection.release();
-//     });
-// });
 
 
 //Driver Email OTP
@@ -504,8 +410,11 @@ app.post('/driveremailotp',function(req,res){
                                         message : "Error Occured" + err
                                     });
                                 }else{
+                                    var vehicle_type = email[0].vehicle_type;
+
                                     res.json({
                                         status : true,
+                                        vehicle_type : vehicle_type,
                                         message : "OTP has been sent to your Email"
                                     });
                                 }
@@ -516,8 +425,9 @@ app.post('/driveremailotp',function(req,res){
             }else{
                 res.json({
                     status : false,
-                    driver_verification : email[0].driver_verification,
-                    account_status : account_status
+                    message: "Wait for Admin Verification",
+                    driver_verification : mobile[0].driver_verification,
+                    account_status : mobile[0].account_status 
                 });
             }
         });
@@ -526,14 +436,18 @@ app.post('/driveremailotp',function(req,res){
 });
 
 
-var apiRoutes = express.Router();
+
+
+
+var assistanceRoutes = express.Router();
 
 
 //Driver Mobile login
 
-apiRoutes.post('/mobilelogin',function(req,res){
+assistanceRoutes.post('/mobilelogin',function(req,res){
         var drivermobile = req.body.driver_mobile;
         var driver_otp = req.body.driver_otp;
+        var fcm_id = req.body.fcm_id;
 
         pool.getConnection(function(err,connection){
         if(err){
@@ -564,6 +478,8 @@ apiRoutes.post('/mobilelogin',function(req,res){
                     var driver_id = mobile[0].driver_id ;
                     var fake_id = mobile[0].fake_id ;
                     var driver_mobile = mobile[0].driver_mobile_pri;
+                    var driver_mobile_sec = mobile[0].driver_mobile_sec;
+                    var driver_address = mobile[0].driver_address;
                     var driver_email = mobile[0].driver_email;
                     var driver_name = mobile[0].driver_name;
                     var driver_image = mobile[0].driver_image;
@@ -571,63 +487,96 @@ apiRoutes.post('/mobilelogin',function(req,res){
                     var driver_verification = mobile[0].driver_verification;
                     var driver_status = mobile[0].driver_status;
                     var account_status = mobile[0].account_status;
+                    var vehicle_type = mobile[0].vehicle_type;
             
-            connection.query('SELECT * FROM truck WHERE driver_id = ?',[driver_id],function(err,truck){
+            connection.query('SELECT * FROM assistance WHERE driver_id = ?',[driver_id],function(err,assistance){
                 if(err) throw err;
 
-                if(truck == 0){
+                if(assistance == 0){
                     
-                            
-                 res.json({
-                        status : true,
-                        message : "Logged in successfully",
-                        driver_id : driver_id,
-                        fake_id : fake_id,
-                        driver_mobile : driver_mobile,
-                        driver_email : driver_email,
-                        driver_name : driver_name,
-                        driver_image : driver_image,
-                        driver_licence_image : driver_licence_image,
-                        driver_verification : driver_verification,
-                        driver_status : driver_status,
-                        account_status : account_status,
-                        token : token
-                    });
-
-                }else if(truck != 0){
+                        connection.query('UPDATE driver SET fcm_id = ? WHERE driver_id = ?',[fcm_id,driver_id],function(err,save){
+                            if(err){
+                                res.json({
+                                    status: false,
+                                    message: "Error Occured " + err
+                                });
+                            }else{
+                                               
+                                       res.json({
+                                              status : true,
+                                              message : "Logged in successfully",
+                                              driver_id : driver_id,
+                                              fake_id : fake_id,
+                                              driver_mobile : driver_mobile,
+                                              driver_mobile_sec : driver_mobile_sec,
+                                              driver_email : driver_email,
+                                              driver_name : driver_name,
+                                              driver_image : driver_image,
+                                              driver_licence_image : driver_licence_image,
+                                              driver_verification : driver_verification,
+                                              driver_status : driver_status,
+                                              account_status : account_status,
+                                              vehicle_type : vehicle_type,
+                                              token : token
+                                          });
+                                
+                            }
+                        })
+            
                  
-                    var truck_image_front = truck[0].truck_image_front;
-                    var truck_image_back = truck[0].truck_image_back;
-                    var truck_image_side = truck[0].truck_image_side;
-                    var truck_title_image1 = truck[0].truck_title_image1 ;
-                    var truck_title_image2 = truck[0].truck_title_image2 ;
-                    var truck_insurance_image1 = truck[0].truck_insurance_image1 ;
-                    var truck_insurance_image2 = truck[0].truck_insurance_image2 ;
-                    var truck_verification = truck[0].truck_verification ; 
 
-                 res.json({
-                        status : true,
-                        message : "Logged in successfully",
-                        driver_id : driver_id,
-                        fake_id : fake_id,
-                        driver_mobile : driver_mobile,
-                        driver_email : driver_email,
-                        driver_name : driver_name,
-                        driver_image : driver_image,
-                        driver_licence_image : driver_licence_image,
-                        driver_verification : driver_verification,
-                        driver_status : driver_status,
-                        account_status : account_status,
-                        truck_image_front : truck_image_front,
-                        truck_image_back : truck_image_back,
-                        truck_image_side : truck_image_side,
-                        truck_title_image1 : truck_title_image1,
-                        truck_title_image2 : truck_title_image2,
-                        truck_insurance_image1 : truck_insurance_image1,
-                        truck_insurance_image2 : truck_insurance_image2,
-                        truck_verification : truck_verification,
-                        token : token
-                    });
+                }else if(assistance != 0){
+                 
+                    var assistance_image_front = assistance[0].assistance_image_front;
+                    var assistance_image_back = assistance[0].assistance_image_back;
+                    var assistance_image_side = assistance[0].assistance_image_side;
+                    var assistance_title_image1 = assistance[0].assistance_title_image1 ;
+                    var assistance_title_image2 = assistance[0].assistance_title_image2 ;
+                    var assistance_insurance_image1 = assistance[0].assistance_insurance_image1 ;
+                    var assistance_insurance_image2 = assistance[0].assistance_insurance_image2 ;
+                    var assistance_verification = assistance[0].assistance_verification ; 
+
+
+
+                    
+                        connection.query('UPDATE driver SET fcm_id = ? WHERE driver_id = ?',[fcm_id,driver_id],function(err,save){
+                            if(err){
+                                res.json({
+                                    status: false,
+                                    message: "Error Occured " + err
+                                });
+                            }else{
+
+                                        
+                                        res.json({
+                                               status : true,
+                                               message : "Logged in successfully",
+                                               driver_id : driver_id,
+                                               fake_id : fake_id,
+                                               driver_mobile : driver_mobile,
+                                               driver_mobile_sec : driver_mobile_sec,
+                                               driver_address : driver_address,
+                                               driver_email : driver_email,
+                                               driver_name : driver_name,
+                                               driver_image : driver_image,
+                                               driver_licence_image : driver_licence_image,
+                                               driver_verification : driver_verification,
+                                               driver_status : driver_status,
+                                               account_status : account_status,
+                                               vehicle_type : vehicle_type,
+                                               assistance_image_front : assistance_image_front,
+                                               assistance_image_back : assistance_image_back,
+                                               assistance_image_side : assistance_image_side,
+                                               assistance_title_image1 : assistance_title_image1,
+                                               assistance_title_image2 : assistance_title_image2,
+                                               assistance_insurance_image1 : assistance_insurance_image1,
+                                               assistance_insurance_image2 : assistance_insurance_image2,
+                                               assistance_verification : assistance_verification,
+                                               token : token
+                                           });
+
+                            }
+                        })
 
                 }
             });
@@ -640,9 +589,10 @@ apiRoutes.post('/mobilelogin',function(req,res){
 
 
 
+
 //Driver Email Login 
 
-apiRoutes.post('/emaillogin',function(req,res){
+assistanceRoutes.post('/emaillogin',function(req,res){
         var driveremail = req.body.driver_email;
         var driver_otp = req.body.driver_otp;
 
@@ -674,68 +624,104 @@ apiRoutes.post('/emaillogin',function(req,res){
                     var driver_id = email[0].driver_id ;
                     var fake_id = email[0].fake_id ;
                     var driver_mobile = email[0].driver_mobile_pri;
+                    var driver_mobile_sec = email[0].driver_mobile_sec;
+                    var driver_address = email[0].driver_address;
                     var driver_email = email[0].driver_email;
                     var driver_name = email[0].driver_name;
                     var driver_image = email[0].driver_image;
                     var driver_licence_image = email[0].driver_licence_image;
-                     var driver_verification = email[0].driver_verification;
+                    var driver_verification = email[0].driver_verification;
                     var driver_status = email[0].driver_status;
                     var account_status = email[0].account_status;
+                    var vehicle_type = email[0].vehicle_type;
 
-
-                 connection.query('SELECT * FROM truck WHERE driver_id = ?',[driver_id],function(err,truck){
+                 connection.query('SELECT * FROM assistance WHERE driver_id = ?',[driver_id],function(err,assistance){
                 if(err) throw err;
 
-                if(truck == 0){
-                    
-                            
-                 res.json({
-                        status : true,
-                        message : "Logged in successfully",
-                        driver_id : driver_id,
-                        driver_mobile : driver_mobile,
-                        driver_email : driver_email,
-                        driver_name : driver_name,
-                        driver_image : driver_image,
-                        driver_licence_image : driver_licence_image,
-                        driver_verification : driver_verification,
-                        driver_status : driver_status,
-                        account_status : account_status,
-                        token : token
-                    });
+                if(assistance == 0){
 
-                }else if(truck != 0){
+
+                         connection.query('UPDATE driver SET fcm_id = ? WHERE driver_id = ?',[fcm_id,driver_id],function(err,save){
+                            if(err){
+                                res.json({
+                                    status: false,
+                                    message: "Error Occured " + err
+                                });
+                            }else{
+
+                                     res.json({
+                                            status : true,
+                                            message : "Logged in successfully",
+                                            driver_id : driver_id,
+                                            driver_mobile : driver_mobile,
+                                            driver_mobile_sec : driver_mobile_sec,
+                                            driver_address : driver_address,
+                                            driver_email : driver_email,
+                                            driver_name : driver_name,
+                                            driver_image : driver_image,
+                                            driver_licence_image : driver_licence_image,
+                                            driver_verification : driver_verification,
+                                            driver_status : driver_status,
+                                            account_status : account_status,
+                                            vehicle_type : vehicle_type,
+                                            token : token
+                                        });
+
+                            }
+
+                         });
+
+                }else if(assistance != 0){
                  
                   
-                    var truck_image_front = truck[0].truck_image_front;
-                    var truck_image_back = truck[0].truck_image_back;
-                    var truck_image_side = truck[0].truck_image_side;
-                    var truck_title_image1 = truck[0].truck_title_image1 ;
-                    var truck_title_image2 = truck[0].truck_title_image2 ;
-                    var truck_insurance_image1 = truck[0].truck_insurance_image1 ;
-                    var truck_insurance_image2 = truck[0].truck_insurance_image2 ;
-                    var truck_verification = truck[0].truck_verification ; 
-                    
-                 res.json({
-                        status : true,
-                        message : "Logged in successfully",
-                        driver_id : driver_id,
-                        driver_mobile : driver_mobile,
-                        driver_email : driver_email,
-                        driver_name : driver_name,
-                        driver_image : driver_image,
-                        driver_licence_image : driver_licence_image,
-                        driver_verification : driver_verification,
-                        driver_status : driver_status,
-                        account_status : account_status,
-                        truck_title_image1 : truck_title_image1,
-                        truck_title_image2 : truck_title_image2,
-                        truck_insurance_image1 : truck_insurance_image1,
-                        truck_insurance_image2 : truck_insurance_image2,
-                        truck_verification : truck_verification,
-                        token : token
-                    });
+                    var assistance_image_front = assistance[0].assistance_image_front;
+                    var assistance_image_back = assistance[0].assistance_image_back;
+                    var assistance_image_side = assistance[0].assistance_image_side;
+                    var assistance_title_image1 = assistance[0].assistance_title_image1 ;
+                    var assistance_title_image2 = assistance[0].assistance_title_image2 ;
+                    var assistance_insurance_image1 = assistance[0].assistance_insurance_image1 ;
+                    var assistance_insurance_image2 = assistance[0].assistance_insurance_image2 ;
+                    var assistance_verification = assistance[0].assistance_verification ; 
 
+
+
+                    
+                    connection.query('UPDATE driver SET fcm_id = ? WHERE driver_id = ?',[fcm_id,driver_id],function(err,save){
+                            if(err){
+                                res.json({
+                                    status: false,
+                                    message: "Error Occured " + err
+                                });
+                            }else{
+
+
+                                    res.json({
+                                           status : true,
+                                           message : "Logged in successfully",
+                                           driver_id : driver_id,
+                                           driver_mobile : driver_mobile,
+                                           driver_mobile_sec : driver_mobile_sec,
+                                           driver_address : driver_address,
+                                           driver_email : driver_email,
+                                           driver_name : driver_name,
+                                           driver_image : driver_image,
+                                           driver_licence_image : driver_licence_image,
+                                           driver_verification : driver_verification,
+                                           driver_status : driver_status,
+                                           account_status : account_status,
+                                           vehicle_type : vehicle_type,
+                                           assistance_title_image1 : assistance_title_image1,
+                                           assistance_title_image2 : assistance_title_image2,
+                                           assistance_insurance_image1 : assistance_insurance_image1,
+                                           assistance_insurance_image2 : assistance_insurance_image2,
+                                           assistance_verification : assistance_verification,
+                                           token : token
+                                       });
+
+                            }
+
+                         })
+                
                 }
 
 
@@ -753,7 +739,7 @@ apiRoutes.post('/emaillogin',function(req,res){
 
 
 
-apiRoutes.use(function(req,res,next){
+assistanceRoutes.use(function(req,res,next){
     var token = req.body.token || req.query.token || req.headers['sessiontoken'];
 
     if(token){
@@ -777,9 +763,11 @@ apiRoutes.use(function(req,res,next){
 });
 
 
+
+
 //Driver Profile Update
 
-apiRoutes.post('/driverupdate',function(req,res){
+assistanceRoutes.post('/driverupdate',function(req,res){
     
     var driver_id = req.headers['id'];
 
@@ -826,7 +814,7 @@ apiRoutes.post('/driverupdate',function(req,res){
                                 }
 
 
-            connection.query('UPDATE driver SET driver_mobile_pri = ?,driver_mobile_sec = ?,driver_address = ?,driver_image = ? WHERE driver_id = ?',[drivertable.driver_mobile_pri,drivertable.driver_mobile_sec,drivertable.driver_address,driverimage,driver_id],function(err,driver){
+            connection.query('UPDATE driver SET driver_mobile_pri = ?,driver_mobile_sec = ?,driver_address = ?,driver_image = ? WHERE driver_id = ?',[drivertable.driver_mobile_pri,drivertable.driver_mobile_sec,drivertable.driver_address,driverimage,driver_id],function(err,save){
                 if(err){
                     res.json({
                         status : false,
@@ -835,7 +823,10 @@ apiRoutes.post('/driverupdate',function(req,res){
                 }else{
                    res.json({
                                 status : true,
-                                driverimage : driverimage
+                                driverimage : driverimage,
+                                driver_mobile_pri : drivertable.driver_mobile_pri,
+                                driver_mobile_sec : drivertable.driver_mobile_sec,
+                                driver_address : drivertable.driver_address
                             });
                 }
             });
@@ -854,12 +845,12 @@ apiRoutes.post('/driverupdate',function(req,res){
 
 //Driver vehicle Update
 
-apiRoutes.post('/vehicleupdate',function(req,res){
+assistanceRoutes.post('/vehicleupdate',function(req,res){
    
     var driver_id = req.headers['id'];
 
     
-                // var vehicletable = {truck_image_front : req.files.vehiclefront[0].filename,truck_image_back : req.files.vehicleback[0].filename, truck_image_side : req.files.vehicleside[0].filename,truck_title_image1 : req.files.vehicletitle[0].filename,truck_title_image2 : req.files.vehicletitle[1].filename,truck_insurance_image1 : req.files.vehicleinsurance[0].filename,truck_insurance_image2 : req.files.vehicleinsurance[1].filename}
+                // var vehicletable = {assistance_image_front : req.files.vehiclefront[0].filename,assistance_image_back : req.files.vehicleback[0].filename, assistance_image_side : req.files.vehicleside[0].filename,assistance_title_image1 : req.files.vehicletitle[0].filename,assistance_title_image2 : req.files.vehicletitle[1].filename,assistance_insurance_image1 : req.files.vehicleinsurance[0].filename,assistance_insurance_image2 : req.files.vehicleinsurance[1].filename}
 
 
 
@@ -875,12 +866,12 @@ apiRoutes.post('/vehicleupdate',function(req,res){
             }else{
 
 
-                connection.query('SELECT * FROM truck WHERE driver_id = ?',[driver_id],function(err,truck){
+                connection.query('SELECT * FROM assistance WHERE driver_id = ?',[driver_id],function(err,assistance){
 
                    
                     if(err) throw err ;
 
-                    if(truck == 0){    
+                    if(assistance == 0){    
 
 
 
@@ -1024,7 +1015,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
             
                                
 
-                        connection.query('INSERT INTO truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ?,truck_title_image1 = ?,truck_title_image2 = ?,truck_insurance_image1 = ?,truck_insurance_image2 = ?,driver_id = ?,truck_verification = ?',[vehiclefront,vehicleback,vehicleside,vehicletitle1,vehicletitle2,vehicleinsurance1,vehicleinsurance2,driver_id,"pending"],function(err,save){
+                        connection.query('INSERT INTO assistance SET assistance_image_front = ?,assistance_image_back = ?,assistance_image_side = ?,assistance_title_image1 = ?,assistance_title_image2 = ?,assistance_insurance_image1 = ?,assistance_insurance_image2 = ?,driver_id = ?,assistance_verification = ?',[vehiclefront,vehicleback,vehicleside,vehicletitle1,vehicletitle2,vehicleinsurance1,vehicleinsurance2,driver_id,"pending"],function(err,save){
                            
 
                             if(err){
@@ -1033,21 +1024,42 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                     message : "Error Occured" + err
                                 });
                             }else{
-                                res.json({
-                                    status : true,
-                                    vehiclefront : vehiclefront,
-                                    vehicleback : vehicleback,
-                                    vehicleside : vehicleside,
-                                    vehicletitle1 : vehicletitle1,
-                                    vehicletitle2 : vehicletitle2,
-                                    vehicleinsurance1 : vehicleinsurance1,
-                                    vehicleinsurance2 : vehicleinsurance2
-                                });
+
+                                var assistance_id = save.insertId;
+
+                                connection.query('UPDATE driver SET assistance_id = ? WHERE driver_id = ?',[assistance_id,driver_id],function(err,done){
+
+                                        if(err){
+                                            res.json({
+                                                status: false,
+                                                message: "Error Occured " + err
+                                            })
+                                        }else{
+
+                                                 res.json({
+                                                    status : true,
+                                                    vehiclefront : vehiclefront,
+                                                    vehicleback : vehicleback,
+                                                    vehicleside : vehicleside,
+                                                    vehicletitle1 : vehicletitle1,
+                                                    vehicletitle2 : vehicletitle2,
+                                                    vehicleinsurance1 : vehicleinsurance1,
+                                                    vehicleinsurance2 : vehicleinsurance2
+                                                 });
+
+
+                                        }
+
+
+                                })
+
+
+                               
                             } 
                         });
                                
 
-                    }else if(truck !=0 ){
+                    }else if(assistance !=0 ){
 
             
 
@@ -1057,7 +1069,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 if(req.files.vehiclefront == undefined){
 //vehiclefront
                                     function vehicleFront(){
-                                        return vehiclefront = truck[0].truck_image_front ;
+                                        return vehiclefront = assistance[0].assistance_image_front ;
                                     }
                                     var vehiclefront = vehicleFront()
                                 }else if(req.files.vehiclefront.length == 1){
@@ -1065,7 +1077,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                      if(typeof req.files.vehiclefront[0].filename !== undefined){
                                     return vehiclefront = req.files.vehiclefront[0].filename
                                 }else{
-                                    return vehiclefront = truck[0].truck_image_front
+                                    return vehiclefront = assistance[0].assistance_image_front
                                 }
                                 }
                                 var vehiclefront = vehicleFront()
@@ -1083,7 +1095,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 if(req.files.vehicleback == undefined){
 //vehicleback
                                     function vehicleBack(){
-                                        return vehicleback = truck[0].truck_image_back ;
+                                        return vehicleback = assistance[0].assistance_image_back ;
                                     }
                                     var vehicleback = vehicleBack()
                                 }else if(req.files.vehicleback.length == 1){
@@ -1091,7 +1103,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                      if(typeof req.files.vehicleback[0].filename !== undefined){
                                     return vehicleback = req.files.vehicleback[0].filename
                                 }else{
-                                    return vehicleback = truck[0].truck_image_back
+                                    return vehicleback = assistance[0].assistance_image_back
                                 }
                                 }
                                 var vehicleback = vehicleBack()
@@ -1108,7 +1120,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 if(req.files.vehicleside == undefined){
 //vehicleside
                                     function vehicleSide(){
-                                        return vehicleside = truck[0].truck_image_side ;
+                                        return vehicleside = assistance[0].assistance_image_side ;
                                     }
                                     var vehicleside = vehicleSide()
                                 }else if(req.files.vehicleside.length == 1){
@@ -1116,7 +1128,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                      if(typeof req.files.vehicleside[0].filename !== undefined){
                                     return vehicleside = req.files.vehicleside[0].filename
                                 }else{
-                                    return vehicleside = truck[0].truck_image_side
+                                    return vehicleside = assistance[0].assistance_image_side
                                 }
                                 }
                                 var vehicleside = vehicleSide()
@@ -1133,10 +1145,10 @@ apiRoutes.post('/vehicleupdate',function(req,res){
 //vehicletitle 
                                 if(req.files.vehicletitle == undefined){
                                     function vehicleTitle1(){
-                                        return vehicletitle1 = truck[0].truck_title_image1 ;
+                                        return vehicletitle1 = assistance[0].assistance_title_image1 ;
                                     }
                                     function vehicleTitle2(){
-                                        return vehicletitle2 = truck[0].truck_title_image2 ;
+                                        return vehicletitle2 = assistance[0].assistance_title_image2 ;
                                     }
                                         var vehicletitle1 = vehicleTitle1()
                                         var vehicletitle2 = vehicleTitle2()
@@ -1146,7 +1158,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                         if(typeof req.files.vehicletitle[0].filename !== undefined){
                                         return vehicletitle1 = req.files.vehicletitle[0].filename
                                         }else{
-                                        return vehicletitle1 = truck[0].truck_title_image1
+                                        return vehicletitle1 = assistance[0].assistance_title_image1
                                         }
                                         }
                                 var vehicletitle1 = vehicleTitle1()
@@ -1156,7 +1168,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                         if(typeof req.files.vehicletitle[0].filename !== undefined){
                                         return vehicletitle1 = req.files.vehicletitle[0].filename
                                         }else{
-                                        return vehicletitle1 = truck[0].truck_title_image1
+                                        return vehicletitle1 = assistance[0].assistance_title_image1
                                         }
                                         }
 //vehicletitle2 
@@ -1164,7 +1176,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                         if(typeof req.files.vehicletitle[1].filename !== undefined){
                                         return vehicletitle2 = req.files.vehicletitle[1].filename
                                         }else{
-                                        return vehicletitle2 = truck[0].truck_title_image2
+                                        return vehicletitle2 = assistance[0].assistance_title_image2
                                         }
                                         }
                                         var vehicletitle1 = vehicleTitle1()
@@ -1181,10 +1193,10 @@ apiRoutes.post('/vehicleupdate',function(req,res){
 //vehicleinsurance 
                                 if(req.files.vehicleinsurance == undefined){
                                     function vehicleInsurance1(){
-                                        return vehicleinsurance1 = truck[0].truck_insurance_image1 ;
+                                        return vehicleinsurance1 = assistance[0].assistance_insurance_image1 ;
                                     }
                                     function vehicleInsurance2(){
-                                        return vehicleinsurance2 = truck[0].truck_insurance_image2 ;
+                                        return vehicleinsurance2 = assistance[0].assistance_insurance_image2 ;
                                     }
                                         var vehicleinsurance1 = vehicleInsurance1()
                                         var vehicleinsurance2 = vehicleInsurance2()
@@ -1195,7 +1207,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                         if(typeof req.files.vehicleinsurance[0].filename !== undefined){
                                         return vehicleinsurance1 = req.files.vehicleinsurance[0].filename
                                         }else{
-                                        return vehicleinsurance1 = truck[0].truck_insurance_image1
+                                        return vehicleinsurance1 = assistance[0].assistance_insurance_image1
                                         }
                                         }
                                 var vehicleinsurance1 = vehicleInsurance1()
@@ -1205,7 +1217,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                         if(typeof req.files.vehicleinsurance[0].filename !== undefined){
                                         return vehicleinsurance1 = req.files.vehicleinsurance[0].filename
                                         }else{
-                                        return vehicleinsurance1 = truck[0].truck_insurance_image1
+                                        return vehicleinsurance1 = assistance[0].assistance_insurance_image1
                                         }
                                         }
 //vehicleinsurance2 
@@ -1213,7 +1225,7 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                         if(typeof req.files.vehicleinsurance[1].filename !== undefined){
                                         return vehicleinsurance2 = req.files.vehicleinsurance[1].filename
                                         }else{
-                                        return vehicleinsurance2 = truck[0].truck_insurance_image2
+                                        return vehicleinsurance2 = assistance[0].assistance_insurance_image2
                                         }
                                         }
                                         var vehicleinsurance1 = vehicleInsurance1()
@@ -1223,458 +1235,47 @@ apiRoutes.post('/vehicleupdate',function(req,res){
                                 }
 
 
-
-
-                            
-
-
-                    connection.query('UPDATE truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ?,truck_title_image1 = ?,truck_title_image2 = ?,truck_insurance_image1 = ?,truck_insurance_image2 = ? WHERE driver_id',[vehiclefront,vehicleback,vehicleside,vehicletitle1,vehicletitle2,vehicleinsurance1,vehicleinsurance2,driver_id],function(err,save){
+                    connection.query('UPDATE assistance SET assistance_image_front = ?,assistance_image_back = ?,assistance_image_side = ?,assistance_title_image1 = ?,assistance_title_image2 = ?,assistance_insurance_image1 = ?,assistance_insurance_image2 = ? WHERE driver_id',[vehiclefront,vehicleback,vehicleside,vehicletitle1,vehicletitle2,vehicleinsurance1,vehicleinsurance2,driver_id],function(err,save){
                             if (err){
                                 res.json({
                                     status : false,
                                     message : "Error Occured" + err
                                 });
                             }else{
-                                res.json({
-                                    status : true,
-                                    vehiclefront : vehiclefront,
-                                    vehicleback : vehicleback,
-                                    vehicleside : vehicleside,
-                                    vehicletitle1 : vehicletitle1,
-                                    vehicletitle2 : vehicletitle2,
-                                    vehicleinsurance1 : vehicleinsurance1,
-                                    vehicleinsurance2 : vehicleinsurance2
-                            });
-                            }
-                        });
 
-                         
-                    }
-                });
-
-            }
-        });
-
-        connection.release();
-    });
-
-
-});
-
-
-
-
-/*
-
-//Driver vehicle Update
-
-apiRoutes.post('/vehicleupdate',function(req,res){
-   
-    var driver_id = req.headers['id'];
-
-    var vehicletable = {truck_image_front : req.files,truck_image_back : req.files, truck_image_side : req.files,truck_title_image : req.files,truck_insurance_image : req.files}
-
-    pool.getConnection(function(err,connection){
-        if(err) throw err ;
-
-        vehicleupdateupload(req,res,function(err){
-            if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                connection.query('SELECT * FROM truck WHERE driver_id = ?',[driver_id],function(err,truck){
-                    if(err) throw err ;
-
-                    if(truck == 0){
-                        connection.query('INSERT INTO truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ?,truck_title_image1 = ?,truck_title_image2 = ?,truck_insurance_image1 = ?,truck_insurance_image2 = ?,driver_id = ?',[req.files.vehiclefront[0].filename,req.files.vehicleback[0].filename,req.files.vehicleside[0].filename,req.files.vehicletitle[0].filename,req.files.vehicletitle[1].filename,req.files.vehicleinsurance[0].filename,req.files.vehicleinsurance[1].filename,driver_id],function(err,save){
-                            if(err){
-                                res.json({
-                                    status : false,
-                                    message : "Error Occured" + err
-                                });
-                            }else{
-                                res.json({
-                                    status : true,
-                                    vehiclefront : req.files.vehiclefront[0].filename,
-                                    vehicleback : req.files.vehicleback[0].filename,
-                                    vehicleside : req.files.vehicleside[0].filename,
-                                    vehicletitle1 : req.files.vehicletitle[0].filename,
-                                    vehicletitle2 : req.files.vehicletitle[1].filename,
-                                    vehicleinsurance1 : req.files.vehicleinsurance[0].filename,
-                                    vehicleinsurance2 : req.files.vehicleinsurance[1].filename
-                                });
-                            }
-                        });
-                    }else if(truck !=0 ){
-                        connection.query('UPDATE truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ?,truck_title_image1 = ?,truck_title_image2 = ?,truck_insurance_image1 = ?,truck_insurance_image2 = ?',[req.files.vehiclefront[0].filename,req.files.vehicleback[0].filename,req.files.vehicleside[0].filename,req.files.vehicletitle[0].filename,req.files.vehicletitle[1].filename,req.files.vehicleinsurance[0].filename,req.files.vehicleinsurance[1].filename],function(err,save){
-                            if (err){
-                                res.json({
-                                    status : false,
-                                    message : "Error Occured" + err
-                                });
-                            }else{
-                                res.json({
-                                    status : true,
-                                    vehiclefront : req.files.vehiclefront[0].filename,
-                                    vehicleback : req.files.vehicleback[0].filename,
-                                    vehicleside : req.files.vehicleside[0].filename,
-                                    vehicletitle1 : req.files.vehicletitle[0].filename,
-                                    vehicletitle2 : req.files.vehicletitle[1].filename,
-                                    vehicleinsurance1 : req.files.vehicleinsurance[0].filename,
-                                    vehicleinsurance2 : req.files.vehicleinsurance[1].filename
-                            });
-                            }
-                        });
-                    }
-                });
-
-            }
-        });
-
-        connection.release();
-    });
-
-});
-
-
-
-
-//Driver Vehicle Update
-
-apiRoutes.post('/vehicleupdate',function(req,res){
-    var userid = req.headers['id'];
-
-     var drivertable = {driver_mobile_pri : req.headers['driver_mobile_pri'],driver_mobile_sec : req.headers['driver_mobile_sec'],driver_address : req.headers['driver_address'], driver_image : req.files};
-
-    var trucktable = {truck_image_front : req.files,truck_image_back : req.files, truck_image_side : req.files,truck_title_image : req.files,truck_insurance_image : req.files}
-
-      
-      var truck_image_front = {truck_image_front : req.files} ; 
-
-      var driver_id = {driver_id : userid};
-
-       pool.getConnection(function(err,connection){
-          if(err){
-             throw err;
-          }
-
-          driverupdateupload(req,res,function(err){
-              if(err){
-                  res.json({
-                      status : false,
-                      message : "Error Occured" + err
-                  })
-              }else{
-                  connection.query('UPDATE driver SET driver_mobile_pri = ?,driver_mobile_sec = ?,driver_address = ? WHERE driver_id = ?',[drivertable.driver_mobile_pri,drivertable.driver_mobile_sec,drivertable.driver_address,userid],function(err,user){
-                      if(err){
-                          res.json({
-                              status : false,
-                              message : "Error Occured" + err
-                          })
-                      }else{
-                     connection.query('UPDATE driver SET driver_image = ? WHERE driver_id = ?',[req.files.driverimage[0].filename,userid],function(err,save){
-                         if(err){
-                             res.json({
-                                 status : false,
-                                 message : "Error Occured" + err
-                             });
-                         }else{
-
-//Looping Starts
-
-                            connection.query('SELECT * FROM truck WHERE driver_id = ?',[userid],function(err,user){
-                                if(err) throw err;
-
-                                if(user == 0){
-
-                                    connection.query('INSERT INTO truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ?,driver_id = ?',[req.files.vehiclefront[0].filename,req.files.vehicleback[0].filename,req.files.vehicleside[0].filename,userid],function(err,save){
-                                 if(err){
+                                
                                      res.json({
-                                         status : false,
-                                         message : "Error Occured" + err
-                                     });
-                                 }else{
-                                    
-                                     connection.query('SELECT * FROM truck_title_image WHERE driver_id = ?',[userid],function(err,title){
-                            
-    if(err) throw err;
+                                                            status : true,
+                                                            vehiclefront : vehiclefront,
+                                                            vehicleback : vehicleback,
+                                                            vehicleside : vehicleside,
+                                                            vehicletitle1 : vehicletitle1,
+                                                            vehicletitle2 : vehicletitle2,
+                                                            vehicleinsurance1 : vehicleinsurance1,
+                                                            vehicleinsurance2 : vehicleinsurance2
+                                                    });
+                               
+                            }
+                        });
 
-    if(title == 0){
-       for(var i=0;i<req.files.vehicletitle.length;i++){
-       var vehicletitle = req.files.vehicletitle[i].filename
-    
-
-        connection.query('INSERT INTO truck_title_image SET truck_title_image = ?,driver_id = ?',[vehicletitle,userid],function(err,save){
-            if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-
-                    connection.query('SELECT * FROM truck_insurance_image WHERE driver_id = ?',[userid],function(err,title){
-
-    if(err) throw err;
-
-    if(title == 0){
-
-        for(var i=0;i<req.files.vehicleinsurance.length;i++){ 
-            var vehicleinsurance = req.files.vehicleinsurance[i].filename
-        
-        
-        connection.query('INSERT INTO truck_insurance_image SET truck_insurance_image = ?,driver_id = ?',[vehicleinsurance,userid],function(err,save){
-            if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                res.json({
-                    status : true
-                });
-            }
-        }); } //for insurance
-    }else if(title !=0 ){
-
-         for(var i=0;i<req.files.vehicleinsurance.length;i++){
-            var vehicleinsurance = req.files.vehicleinsurance[i].filename            
-
-        connection.query('UPDATE truck_insurance_image SET truck_insurance_image = ? WHERE driver_id = ?',[vehicleinsurance,userid],function(err,save){
-                 if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                res.json({
-                    status : true
-                });
-            }
-        });
-    } } // for inurance
-});           
-            }
-        }); } //for title
-    }else if(title !=0 ){
-        for(var i=0;i<req.files.vehicletitle.length;i++){
-       var vehicletitle = req.files.vehicletitle[i].filename
-    
-        connection.query('UPDATE truck_title_image SET truck_title_image = ? WHERE driver_id = ?',[vehicletitle,userid],function(err,save){
-                 if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-               
-                connection.query('SELECT * FROM truck_insurance_image WHERE driver_id = ?',[userid],function(err,title){
-
-    if(err) throw err;
-
-    if(title == 0){
-
-        for(var i=0;i<req.files.vehicleinsurance.length;i++){ 
-            var vehicleinsurance = req.files.vehicleinsurance[i].filename
-        
-        
-        connection.query('INSERT INTO truck_insurance_image SET truck_insurance_image = ?,driver_id = ?',[vehicleinsurance,userid],function(err,save){
-            if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                res.json({
-                    status : true
-                });
-            }
-        }); } //for inurance
-    }else if(title !=0 ){
-
-         for(var i=0;i<req.files.vehicleinsurance.length;i++){
-            var vehicleinsurance = req.files.vehicleinsurance[i].filename            
-
-        connection.query('UPDATE truck_insurance_image SET truck_insurance_image = ? WHERE driver_id = ?',[vehicleinsurance,userid],function(err,save){
-                 if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                res.json({
-                    status : true
-                });
-            }
-        });
-    } } // for insurance
-});
-
-            }
-        });
-    } } // for title
-});
-
-                                 }
-                             });
-
-                                }else if(user != 0){
-
-                                    connection.query('UPDATE truck SET truck_image_front = ?,truck_image_back = ?,truck_image_side = ? WHERE driver_id = ?',[req.files.vehiclefront[0].filename,req.files.vehicleback[0].filename,req.files.vehicleside[0].filename,userid],function(err,save){
-                                        if(err){
-                                            res.json({
-                                                status : false,
-                                                message : "Error Occured" + err
-                                            });
-                                        }else{
-
-connection.query('SELECT * FROM truck_title_image WHERE driver_id = ?',[userid],function(err,title){
-
-    if(err) throw err;
-
-    if(title == 0){
-        
-            for(var i=0;i<req.files.vehicletitle.length;i++){
-       var vehicletitle = req.files.vehicletitle[i].filename
-    
-
-        connection.query('INSERT INTO truck_title_image SET truck_title_image = ?,driver_id = ?',[vehicletitle,userid],function(err,save){
-            if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-               
-                connection.query('SELECT * FROM truck_insurance_image WHERE driver_id = ?',[userid],function(err,title){
-
-    if(err) throw err;
-
-    if(title == 0){
-
-        for(var i=0;i<req.files.vehicleinsurance.length;i++){ 
-            var vehicleinsurance = req.files.vehicleinsurance[i].filename
-        
-        
-        connection.query('INSERT INTO truck_insurance_image SET truck_insurance_image = ?,driver_id = ?',[vehicleinsurance,userid],function(err,save){
-            if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                res.json({
-                    status : true
-                });
-            }
-        }); } //for insurance
-    }else if(title !=0 ){
-
-         for(var i=0;i<req.files.vehicleinsurance.length;i++){
-            var vehicleinsurance = req.files.vehicleinsurance[i].filename            
-
-        connection.query('UPDATE truck_insurance_image SET truck_insurance_image = ? WHERE driver_id = ?',[vehicleinsurance,userid],function(err,save){
-                 if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                res.json({
-                    status : true
-                });
-            }
-        });
-    } } // for insurance
-});
-
-            }
-        }); } //for truck
-    }else if(title !=0 ){
-
-            for(var i=0;i<req.files.vehicletitle.length;i++){
-       var vehicletitle = req.files.vehicletitle[i].filename
-    
-        connection.query('UPDATE truck_title_image SET truck_title_image = ? WHERE driver_id = ?',[vehicletitle,userid],function(err,save){
-                 if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                
-                    connection.query('SELECT * FROM truck_insurance_image WHERE driver_id = ?',[userid],function(err,title){
-
-    if(err) throw err;
-
-    if(title == 0){
-
-        for(var i=0;i<req.files.vehicleinsurance.length;i++){ 
-            var vehicleinsurance = req.files.vehicleinsurance[i].filename
-        
-        
-        connection.query('INSERT INTO truck_insurance_image SET truck_insurance_image = ?,driver_id = ?',[vehicleinsurance,userid],function(err,save){
-            if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                res.json({
-                    status : true
-                });
-            }
-        }); } //for insurance
-    }else if(title !=0 ){
-
-         for(var i=0;i<req.files.vehicleinsurance.length;i++){
-            var vehicleinsurance = req.files.vehicleinsurance[i].filename            
-
-        connection.query('UPDATE truck_insurance_image SET truck_insurance_image = ? WHERE driver_id = ?',[vehicleinsurance,userid],function(err,save){
-                 if(err){
-                res.json({
-                    status : false,
-                    message : "Error Occured" + err
-                });
-            }else{
-                res.json({
-                    status : true
-                });
-            }
-        });
-    } } // for insurance
-});
-
-            }
-        });
-    } } // for truck
-});
                          
-                                        }
-                                    });
+                    }
+                });
 
-                                }
+            }
+        });
 
-                            });
-                         }
-                     });
+        connection.release();
+    });
 
-                      }
-                  });
-              }
-          });
 
-          connection.release();
-       });
-       
 });
 
-*/
+
 
 // Driver Location Update
 
-apiRoutes.post('/location',function(req,res){
+assistanceRoutes.post('/location',function(req,res){
 
     var driverid = req.headers['id'];
 
@@ -1709,10 +1310,26 @@ apiRoutes.post('/location',function(req,res){
                         message : "Error Occured" + err
                     });
                 }else{
-                    res.json({
-                        status : true,
-                        message : "Location Updated successfully"
-                    });
+
+                    connection.query('SELECT account_status FROM driver WHERE driver_id = ?',[driverid],function(err,account){
+                        if(err){
+                            res.json({
+                                status: false,
+                                message: "Error Occured " + err
+                            })
+                        }else{
+
+                                var account_status = account[0].account_status ;
+
+                             res.json({
+                                status : true,
+                                account_status: account_status,
+                                message : "Location Updated successfully"
+                            });
+
+                        }
+                    })
+       
                 }
             });
         }else if(driver != 0 ){
@@ -1724,10 +1341,27 @@ apiRoutes.post('/location',function(req,res){
                         message : "Error Occured" + err
                     });
                 }else{
-                    res.json({
-                        status : true,
-                        message : "Location Updated successfully"
+
+
+                    connection.query('SELECT account_status FROM driver WHERE driver_id = ?',[driverid],function(err,account){
+                        if(err){
+                            res.json({
+                                status: false,
+                                message: "Error Occured " + err
+                            })
+                        }else{
+
+                            var account_status = account[0].account_status ;
+
+                             res.json({
+                                status : true,
+                                account_status: account_status,
+                                message : "Location Updated successfully"
+                            });
+
+                        }
                     });
+
                 }
             });
         }
@@ -1740,11 +1374,17 @@ apiRoutes.post('/location',function(req,res){
 });
 
 
+
+
 //Driver viewing Jobs
 
-apiRoutes.post('/showjobs',function(req,res){
+assistanceRoutes.post('/showjobs',function(req,res){
 
     var driver_id = req.headers['id'];
+
+    var latitude = req.body.latitude ;
+    var longitude = req.body.longitude ;
+    var radius = req.body.radius ;
 
     pool.getConnection(function(err,connection){
         if(err){
@@ -1755,7 +1395,7 @@ apiRoutes.post('/showjobs',function(req,res){
         }
 
     
-    connection.query('SELECT * FROM bookings WHERE job_status = ?',["waiting"],function(err,job){
+    connection.query('SELECT booking_id,customer_id,pickup_location,drop_location,delivery_address,vehicle_type,description,goods_image1,goods_image2,goods_image3,goods_image4,goods_image5,booking_time, ( 3959 * acos( cos( radians(' + latitude + ') ) * cos( radians( pickup_latitude ) ) * cos( radians( pickup_longitude ) - radians(' +longitude + ') ) + sin( radians(' + latitude + ') ) * sin( radians( pickup_latitude ) ) ) ) AS distance FROM bookings WHERE job_status = ? AND goods_type = ? AND booking_id NOT IN (SELECT booking_id FROM job_bidding WHERE driver_id =' + driver_id + ')' + 'HAVING distance <' + radius +' ORDER BY distance LIMIT 0 , 20 ',["waiting","vehicle"],function(err,job){
         if(err){
             res.json({
                 status : false,
@@ -1778,7 +1418,7 @@ apiRoutes.post('/showjobs',function(req,res){
 
 // Driver Bidding for Job
 
-apiRoutes.post('/jobbidding',function(req,res){
+assistanceRoutes.post('/jobbidding',function(req,res){
 
     var driver_id = req.headers['id'];
 
@@ -1811,21 +1451,78 @@ apiRoutes.post('/jobbidding',function(req,res){
 });
 
 
+//Driver viewing current job
+
+assistanceRoutes.post('/jobhistory',function(req,res){
+    
+    var driver_id = req.headers['id'];
+
+    pool.getConnection(function(err,connection){
+        if(err) throw err;
+
+        connection.query('SELECT bookings.*,customer.customer_name,customer.customer_mobile,customer.customer_image FROM bookings INNER JOIN customer ON bookings.customer_id = customer.customer_id WHERE driver_id = ? AND job_status = ?',[driver_id,"confirmed"],function(err,info){
+            if(err){
+                res.json({
+                    status: false,
+                    message: "Error Occured " + err
+                });
+            }else{
+                res.json({
+                    status: true,
+                    message: info
+                });
+            }
+        });
+            
+        connection.release();
+    })
+
+
+});
+
+
+assistanceRoutes.post('/finishjob',function(req,res){
+
+    var driver_id = req.headers['id'];
+    var job_completed_time = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss')
+    var booking_id = req.body.booking_id;
+
+    pool.getConnection(function(err,connection){
+        if(err) throw err;
+
+
+    connection.query('UPDATE driver SET driver_job_status = ? WHERE driver_id = ?',["free",driver_id],function(err,driver){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured "+ err
+            });
+        }else{
+            connection.query('UPDATE bookings SET job_completed_time = ? WHERE booking_id = ?',[job_completed_time,booking_id],function(err,bookings){
+                if(err){
+                    res.json({
+                        status: true,
+                        message: "Current job has been successfully completed and you can bid for new job"
+                    })
+                }
+            })
+        }
+    })
+
+
+        connection.release();
+    })
+
+})
 
 
 
 
+app.use('/assistance',assistanceRoutes);
 
 
-app.use('/driver',apiRoutes);
+
+
 
 
 }
-
-
-
-
-
-
-
-

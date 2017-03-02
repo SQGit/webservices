@@ -11,6 +11,14 @@ var easyid = require('easyid');
 var validator = require('email-validator');
 var verifier = require('email-verify')
 
+
+
+var request = require('request');
+
+var serverkey  = 'AAAAzGfmywU:APA91bEsExIN0HQyaLR-ASpD5n2Tzg3bAT-8Us_2tNITIU1XOYXX_z1fY4a5misiQXE-Vh14fIa5NUQ7pNE5yMdHnjA9hoKMayPkBFRUuCF-lCYPRNA7Hqy2z7jITF7bc1Ai-K5eDVxU1zSMhNrjvtgixEjiFgLzpg'
+
+
+
 var pool = require('../connection');
 
 
@@ -26,7 +34,7 @@ var client = twilio(accountSid,authToken);
 
 //Nodemailer configuration
 
-var smtpTransport = nodemailer.createTransport('smtps://movehaul.developer%40gmail.com:Noble_123@smtp.gmail.com');
+var smtpTransport = nodemailer.createTransport('smtps://movehaul.developer%40gmail.com:Noble_1234@smtp.gmail.com');
 
 
 //Booking Goods Image
@@ -37,7 +45,8 @@ var bookinggoodsstorage = multer.diskStorage({
     },
     filename : function(req,file,cb){
         var datetimestamp = Date.now();
-        cb(null,file.fieldname + '-' + datetimestamp + '.' + mime.extension(file.mimetype));
+        var userid = req.headers['id'];
+        cb(null,userid + '-' + file.fieldname + '-' + datetimestamp + '.' + mime.extension(file.mimetype));
     }
 });
 
@@ -46,17 +55,49 @@ var bookinggoodsupload = multer({
 }).array('bookinggoods',5);
 
 
+//Customer Profile
+
+var customerupdatestorage = multer.diskStorage({
+    destination : function(req,file,cb){
+        cb(null,'C:/wamp64/www/movehaul/assets/img/customer_details');
+    },
+    filename : function(req,file,cb){
+        var datetimestamp = Date.now();
+        var userid = req.headers['id'];
+        cb(null,userid + '-' + file.fieldname + '-' + datetimestamp + '.' + mime.extension(file.mimetype));
+    }
+})
+
+var customerupdateupload = multer({
+    storage : customerupdatestorage
+}).array('customerimage',1)
+
 
 
 module.exports = function(app){
 
 
-//Retrieving the Truck Details
 
-app.get('/truck_types/:name',function(req,res,next){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Retrieving the Vehicle Details
+
+app.get('/vehicle_types/:name',function(req,res,next){
     var options = {
        // root : __dirname + /../ + /../ + 'public/driverupdate'
-          root : 'C:/wamp64/www/movehaul/assets/img/truck_types'
+          root : 'C:/wamp64/www/movehaul/assets/img/vehicle_types'
     };
 
     var filename = req.params.name;
@@ -66,16 +107,36 @@ app.get('/truck_types/:name',function(req,res,next){
                 status : false,
                 message : "Error Occured" + err
             });
+        }else{
+           console.log(filename +" has been sent")
         }
-        // else{
-        //     res.json({
-        //         status : true,
-        //         message : filename + "has been sent"
-        //     });
-        // }
     });
+    
 });
 
+
+// Retrieving the Customer Images
+
+app.get('/customer_details/:name',function(req,res,next){
+   
+    var filename = req.params.name;
+
+    var options = {
+        root : 'C:/wamp64/www/movehaul/assets/img/customer_details'
+    }
+
+    res.sendFile(filename,options,function(err){
+        if(err){
+            res.json({
+                status : false,
+                message : "Error Occured" + err
+            });
+        }else{
+            console.log(filename +" has been sent")
+        }
+    });  
+
+});
 
 // Customer Signup
 
@@ -510,7 +571,7 @@ apiRoutes.post('/mobilelogin',function(req,res){
                     var customer_mobile = mobile[0].customer_mobile;
                     var customer_email = mobile[0].customer_email;
                     var customer_name = mobile[0].customer_name;
-
+                    var customer_image = mobile[0].customer_image;
                     res.json({
                         status : true,
                         message : "Logged in successfully",
@@ -519,6 +580,7 @@ apiRoutes.post('/mobilelogin',function(req,res){
                         customer_mobile : customer_mobile,
                         customer_email : customer_email,
                         customer_name : customer_name,
+                        customer_image : customer_image,
                         token : token
                     });
                 }
@@ -564,15 +626,17 @@ apiRoutes.post('/emaillogin',function(req,res){
                     var customer_mobile = email[0].customer_mobile;
                     var customer_email = email[0].customer_email;
                     var customer_name = email[0].customer_name;
+                    var customer_image = email[0].customer_image;
 
                     res.json({
                         status : true,
                         message : "Logged in successfully",
-                        customer_id : id,
+                        customer_id : customer_id,
                         fake_id : fake_id,
                         customer_mobile : customer_mobile,
                         customer_email : customer_email,
                         customer_name : customer_name,
+                        customer_image : customer_image,
                         token : token
                     });
                 }
@@ -649,18 +713,104 @@ apiRoutes.use(function(req,res,next){
     }
 });
 
+
+
+//Customer Updating profile details
+
+apiRoutes.post('/customerupdate',function(req,res){
+
+    var customer_id = req.headers['id'];
+
+    var customer_name = req.headers['customer_name'] || req.body.customer_name ;
+    var customer_email = req.headers['customer_email'] || req.body.customer_email ;
+
+
+    pool.getConnection(function(err,connection){
+        if(err) throw err ;
+
+
+    customerupdateupload(req,res,function(err){
+
+        if(err){
+            res.json({
+                status: false,
+                message : "Error Occured" + err
+            });
+        }else{
+
+            connection.query('SELECT * FROM customer WHERE customer_id = ?',[customer_id],function(err,customer){
+                if(err){
+                    res.json({
+                        status : false,
+                        message : "Error Occured" + err
+                    });
+                }else{
+
+                    
+                            if(req.files == undefined){
+                                function customerImage(){
+                                    return customerimage = customer[0].customer_image ;
+                                }
+                                    var customerimage = customerImage()
+                            }else if(req.files.length == 1){
+                                function customerImage(){
+                                    if(typeof req.files[0].filename !== undefined){
+                                        return customerimage = req.files[0].filename
+                                    }else{
+                                        return customerimage = customer[0].customer_image ;
+                                    }
+                                    }
+                                    var customerimage = customerImage();
+                            }
+
+                
+            connection.query('UPDATE customer SET customer_name = ?,customer_email = ?,customer_image = ? WHERE customer_id = ?',[customer_name,customer_email,customerimage,customer_id],function(err,save){
+                if(err){
+                    res.json({
+                        status : false,
+                        message : "Error Occured" + err
+                    })
+                }else{
+                    res.json({
+                        status : true,
+                        customer_name : customer_name,
+                        customer_email : customer_email,
+                        customer_image : customerimage
+                    });
+                }
+
+            });
+
+
+                }
+
+
+            });
+
+        }
+
+    });
+
+        connection.release();
+    })
+
+});
+
+
+
+
 //Customer Retrieving Emergency contacts
 
 apiRoutes.post('/getemergency',function(req,res){
     
-    var customerid = req.headers['id'];
+    var customer_id = req.headers['id'];
 
     pool.getConnection(function(err,connection){
         if(err){
             throw err;
         }
 
-    connection.query('SELECT * FROM customer_emergency WHERE customer_id = ?',[customerid],function(err,emergency){
+    connection.query('SELECT * FROM customer_emergency WHERE customer_id = ?',[customer_id],function(err,emergency){
         if(err){
             res.json({
                 status : false,
@@ -684,7 +834,7 @@ apiRoutes.post('/getemergency',function(req,res){
 
 apiRoutes.post('/insertemergency',function(req,res){
     
-    var customerid = req.headers['id'];
+    var customer_id = req.headers['id'];
 
     var customerEmergency = { emergency_name : req.body.emergency_name, emergency_mobile : req.body.emergency_mobile, emergency_relation : req.body.emergency_relation};
 
@@ -693,12 +843,12 @@ apiRoutes.post('/insertemergency',function(req,res){
             throw err;
         }
 
-    connection.query('SELECT * FROM customer_emergency WHERE customer_id = ?',[customerid],function(err,emergency){
+    connection.query('SELECT * FROM customer_emergency WHERE customer_id = ?',[customer_id],function(err,emergency){
         if(err) throw err ;
          
         
         if(emergency == 0){
-            connection.query('INSERT INTO customer_emergency SET emergency_name = ?, emergency_mobile = ?,emergency_relation = ?, customer_id = ?' ,[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customerid],function(err,save){
+            connection.query('INSERT INTO customer_emergency SET emergency_name = ?, emergency_mobile = ?,emergency_relation = ?, customer_id = ?' ,[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customer_id],function(err,save){
                 if(err){
                     res.json({
                         status : false,
@@ -712,7 +862,7 @@ apiRoutes.post('/insertemergency',function(req,res){
                 }
             });
         }else if(emergency == 1){
-            connection.query('INSERT INTO customer_emergency SET emergency_name = ?, emergency_mobile = ?,emergency_relation = ?, customer_id = ?',[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customerid],function(err,save){
+            connection.query('INSERT INTO customer_emergency SET emergency_name = ?, emergency_mobile = ?,emergency_relation = ?, customer_id = ?',[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customer_id],function(err,save){
                 if(err){
                     res.json({
                         status : false,
@@ -742,7 +892,7 @@ apiRoutes.post('/insertemergency',function(req,res){
 
 apiRoutes.post('/updateemergency',function(req,res){
     
-    var customerid = req.headers['id'];
+    var customer_id = req.headers['id'];
 
     var customerEmergency = { emergency_id : req.body.emergency_id,emergency_name : req.body.emergency_name,emergency_mobile : req.body.emergency_mobile,emergency_relation : req.body.emergency_relation};
 
@@ -751,7 +901,7 @@ apiRoutes.post('/updateemergency',function(req,res){
             throw err;
         }
 
-    connection.query('UPDATE customer_emergency SET emergency_name = ?,emergency_mobile = ?, emergency_relation = ? WHERE emergency_id = ?',[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customerid],function(err,update){
+    connection.query('UPDATE customer_emergency SET emergency_name = ?,emergency_mobile = ?, emergency_relation = ? WHERE emergency_id = ?',[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customer_id],function(err,update){
         if(err){
             res.json({
                 status : false,
@@ -773,7 +923,7 @@ apiRoutes.post('/updateemergency',function(req,res){
 
 apiRoutes.post('/finddrivers',function(req,res){
    
-    var customerid = req.headers['id'];
+    var customer_id = req.headers['id'];
 
     var customerlocation = { customer_latitude : req.body.customer_latitude,customer_longitude : req.body.customer_longitude,customer_locality : req.body.customer_locality };
 
@@ -847,32 +997,83 @@ apiRoutes.post('/goodstype',function(req,res){
 });
 
 
-// Customer getting Truck Types
 
-apiRoutes.post('/trucktype',function(req,res){
 
+// // Customer getting Vehicle Types
+
+// apiRoutes.post('/vehicletype',function(req,res){
+
+//     var customer_id = req.headers['id'];
+
+//     pool.getConnection(function(err,connection){
+//     if(err) throw err ;
+
+//     connection.query('SELECT * FROM truck_type',function(err,truck){
+//         if(err){
+//             res.json({
+//                 status : false,
+//                 message : "Error Occured" + err
+//             });
+//         }else{
+            
+//             connection.query('SELECT * FROM bus_mini_van_type',function(err,bus){
+//                 if(err){
+//                     res.json({
+//                         status: false,
+//                         message: "Error Occured " + err
+//                     })
+//                 }else{
+//                     res.json({
+//                         status: true,
+//                         truck_type: truck,
+//                         bus_type: bus
+//                     })
+//                 }
+//             })
+//         }
+//     });
+//         connection.release();
+//     });
+// });
+
+
+//Customer getting Vehicle typeof
+
+apiRoutes.post('/vehicletype',function(req,res){
+    
     var customer_id = req.headers['id'];
 
     pool.getConnection(function(err,connection){
-    if(err) throw err ;
-
-    connection.query('SELECT * FROM truck_type',function(err,truck){
         if(err){
             res.json({
-                status : false,
-                message : "Error Occured" + err
-            });
-        }else{
-              
-            res.json({
-                status : true,
-                truck_type : truck
-            });
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
         }
-    });
+
+
+
+    connection.query('SELECT * FROM vehicle_type',function(err,vehicle){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message: vehicle
+            })
+        }
+    })
+
+
         connection.release();
-    });
-});
+    })
+
+})
+
 
 // Customer Booking for Job
 
@@ -880,60 +1081,17 @@ apiRoutes.post('/booking',function(req,res){
 
     var customer_id = req.headers['id'];
     var pickup_location = req.headers['pickup_location'] || req.body.pickup_location ;
+    var pickup_latitude = req.headers['pickup_latitude'] || req.body.pickup_latitude ;
+    var pickup_longitude = req.headers['pickup_longitude'] || req.body.pickup_longitude ;
     var drop_location = req.headers['drop_location'] || req.body.drop_location ;
     var goods_type = req.headers['goods_type'] || req.body.goods_type ;
-    var truck_type = req.headers['truck_type'] || req.body.truck_type ;
+    var vehicle_type = req.headers['vehicle_type'] || req.body.vehicle_type;
+    var vehicle_main_type = req.headers['vehicle_main_type'] || req.body.vehicle_main_type;
+    var vehicle_sub_type = req.headers['vehicle_sub_type'] || req.body.vehicle_sub_type ;                             //Previously truck_type
     var description = req.headers['description'] || req.body.description ;
     var booking_time = req.headers['booking_time'] || req.body.booking_time ;
-
-
-    
-//bookinggoods 
-                                if(req.files.bookinggoods == undefined){
-                                    function bookingGoods1(){
-                                        return bookinggoods1 = "null" ;
-                                    }
-                                    function bookingGoods2(){
-                                        return bookinggoods2 = "null" ;
-                                    }
-                                        var bookinggoods1 = bookingGoods1()
-                                        var bookinggoods2 = bookingGoods2()
-                                }else if(req.files.bookinggoods.length == 1){
-//bookinggoods1  
-                                        function bookingGoods1(){
-                                        if(typeof req.files.bookinggoods[0].filename !== undefined){
-                                        return bookinggoods1 = req.files.bookinggoods[0].filename
-                                        }
-                                        }
-                                var bookinggoods1 = bookingGoods1()
-                                }else if(req.files.bookinggoods.length == 2){
-//bookinggoods2
-                                        function bookingGoods1(){
-                                        if(typeof req.files.bookinggoods[0].filename !== undefined){
-                                        return bookinggoods1 = req.files.bookinggoods[0].filename
-                                        }
-                                        }
-//bookinggoods2 
-                                        function bookingGoods2(){      
-                                        if(typeof req.files.bookinggoods[1].filename !== undefined){
-                                        return bookinggoods2 = req.files.bookinggoods[1].filename
-                                        }
-                                        }
-                                        var bookinggoods1 = bookingGoods1()
-                                        var bookinggoods2 = bookingGoods2()
-                                }else{
-                                    console.log("No vehicle title image has been attached");
-                                }
-                                     
-
-
-
-
-
-
-
-
-
+    var delivery_address = req.headers['delivery_address'] || req.body.delivery_address ;
+  
 
     pool.getConnection(function(err,connection){
         if(err) throw err ;
@@ -946,7 +1104,154 @@ apiRoutes.post('/booking',function(req,res){
                 message : "Error Occured" + err
             });
         }else{
-            connection.query('INSERT INTO bookings SET customer_id = ?,pickup_location = ?,drop_location = ?, goods_type = ?, truck_type = ?,description = ?,booking_time = ?,radius = ?,job_status = ?,goods_image1 = ?,goods_image2 = ?',[customer_id,pickup_location,drop_location,goods_type,truck_type,description,booking_time,"ten","waiting",bookinggoods1,bookinggoods2],function(err,book){
+
+                                         
+//bookinggoods 
+                                if(req.files == undefined){
+                                    function bookingGoods1(){
+                                        return bookinggoods1 = "null" ;
+                                    }
+                                    function bookingGoods2(){
+                                        return bookinggoods2 = "null" ;
+                                    }
+                                    function bookingGoods3(){
+                                        return bookinggoods3 = "null";
+                                    }
+                                    function bookingGoods4(){
+                                        return bookinggoods4 = "null";
+                                    }
+                                    function bookingGoods5(){
+                                        return bookinggoods5 = "null";
+                                    }
+                                        var bookinggoods1 = bookingGoods1()
+                                        var bookinggoods2 = bookingGoods2()
+                                        var bookinggoods3 = bookingGoods3()
+                                        var bookinggoods4 = bookingGoods4()
+                                        var bookinggoods5 = bookingGoods5()
+                                }else if(req.files.length == 1){
+//bookinggoods1  
+                                        function bookingGoods1(){
+                                        if(typeof req.files[0].filename !== undefined){
+                                        return bookinggoods1 = req.files[0].filename
+                                        }
+                                        }
+                                var bookinggoods1 = bookingGoods1()
+                                }else if(req.files.length == 2){
+//bookinggoods2
+                                        function bookingGoods1(){
+                                        if(typeof req.files[0].filename !== undefined){
+                                        return bookinggoods1 = req.files[0].filename
+                                        }
+                                        }
+//bookinggoods2 
+                                        function bookingGoods2(){      
+                                        if(typeof req.files[1].filename !== undefined){
+                                        return bookinggoods2 = req.files[1].filename
+                                        }
+                                        }
+                                        var bookinggoods1 = bookingGoods1()
+                                        var bookinggoods2 = bookingGoods2()
+                                }else if(req.files.length == 3){
+
+                                         function bookingGoods1(){
+                                        if(typeof req.files[0].filename !== undefined){
+                                        return bookinggoods1 = req.files[0].filename
+                                        }
+                                        }
+//bookinggoods2 
+                                        function bookingGoods2(){      
+                                        if(typeof req.files[1].filename !== undefined){
+                                        return bookinggoods2 = req.files[1].filename
+                                        }
+                                        }
+                                        
+                                        function bookingGoods3(){      
+                                        if(typeof req.files[2].filename !== undefined){
+                                        return bookinggoods3 = req.files[2].filename
+                                        }
+                                        }
+
+                                        var bookinggoods1 = bookingGoods1()
+                                        var bookinggoods2 = bookingGoods2()
+                                        var bookinggoods3 = bookingGoods3()
+
+                                    }else if(req.files.length == 4){
+
+
+                                        function bookingGoods1(){
+                                        if(typeof req.files[0].filename !== undefined){
+                                        return bookinggoods1 = req.files[0].filename
+                                        }
+                                        }
+//bookinggoods2 
+                                        function bookingGoods2(){      
+                                        if(typeof req.files[1].filename !== undefined){
+                                        return bookinggoods2 = req.files[1].filename
+                                        }
+                                        }
+                                        
+                                        function bookingGoods3(){      
+                                        if(typeof req.files[2].filename !== undefined){
+                                        return bookinggoods3 = req.files[2].filename
+                                        }
+                                        }
+                                    
+                                        function bookingGoods4(){
+                                        if(typeof req.files[3].filename !== undefined){
+                                        return bookinggoods4 = req.files[3].filename
+                                        }
+                                        }
+
+                                        var bookinggoods1 = bookingGoods1()
+                                        var bookinggoods2 = bookingGoods2()
+                                        var bookinggoods3 = bookingGoods3()
+                                        var bookinggoods4 = bookingGoods4()
+                                    }else if(req.files.length == 5){
+
+                                        function bookingGoods1(){
+                                        if(typeof req.files[0].filename !== undefined){
+                                        return bookinggoods1 = req.files[0].filename
+                                        }
+                                        }
+//bookinggoods2 
+                                        function bookingGoods2(){      
+                                        if(typeof req.files[1].filename !== undefined){
+                                        return bookinggoods2 = req.files[1].filename
+                                        }
+                                        }
+                                        
+                                        function bookingGoods3(){      
+                                        if(typeof req.files[2].filename !== undefined){
+                                        return bookinggoods3 = req.files[2].filename
+                                        }
+                                        }
+                                    
+                                        function bookingGoods4(){
+                                        if(typeof req.files[3].filename !== undefined){
+                                        return bookinggoods4 = req.files[3].filename
+                                        }
+                                        }
+                                    
+                                        function bookingGoods5(){
+                                        if(typeof req.files[4].filename !== undefined){
+                                        return bookinggoods5 = req.files[4].filename
+                                        }
+                                        }
+
+                                        var bookinggoods1 = bookingGoods1()
+                                        var bookinggoods2 = bookingGoods2()
+                                        var bookinggoods3 = bookingGoods3()
+                                        var bookinggoods4 = bookingGoods4()
+                                        var bookinggoods5 = bookingGoods5()
+                                        }else{
+                                    console.log("No Goods Image has been attached");
+                                }
+
+
+
+            connection.query('INSERT INTO bookings SET customer_id = ?,pickup_location = ?,pickup_latitude = ?,pickup_longitude = ?,drop_location = ?,delivery_address = ?, goods_type = ?,vehicle_type = ?,vehicle_main_type = ?,vehicle_sub_type = ?,description = ?,booking_time = ?,radius = ?,job_status = ?,goods_image1 = ?,goods_image2 = ?,goods_image3 = ?,goods_image4 = ?,goods_image5 = ?',[customer_id,pickup_location,pickup_latitude,pickup_longitude,drop_location,delivery_address,goods_type,vehicle_type,vehicle_main_type,vehicle_sub_type,description,booking_time,"ten","waiting",bookinggoods1,bookinggoods2,bookinggoods3,bookinggoods4,bookinggoods5],function(err,book){
+
+
                 if(err){
                     res.json({
                         status :false,
@@ -956,7 +1261,7 @@ apiRoutes.post('/booking',function(req,res){
                     res.json({
                         status : true,
                         message : "Your Post has been added successfully",
-                        booking_id : book.booking_id
+                        booking_id : book.insertId
                     });
                 }
         });
@@ -1009,6 +1314,83 @@ apiRoutes.post('/showcurrentjob',function(req,res){
 
 
 
+// //Customer viewing Bidding/Drivers List
+
+// apiRoutes.post('/driverslist',function(req,res){
+
+//     var customer_id = req.headers['id'];
+
+//     var booking_id = req.body.booking_id ;
+
+//     pool.getConnection(function(err,connection){
+//         if(err){
+//             res.json({
+//                 code : 100,
+//                 message : "Error in connecting Database"
+//             })
+//         }
+
+    
+//     connection.query('SELECT * FROM job_bidding WHERE booking_id = ?',[booking_id],function(err,job){
+//         if(err) throw err ;
+
+//         if(job == 0){
+//             res.json({
+//                 status : false,
+//                 message : "No job listed here"
+//             })
+//         }else if(job != 0){
+
+// //Driver Id
+//                   function driverId(){
+//                   var driver_id = [];
+
+//                   for(var i=0;i<job.length;i++){
+//                              driver_id.push(job[i].driver_id) ;
+//                   }
+//                   return  driver_id ;
+//                   }  
+
+//                   console.log(driverId().join())
+// // //Booking Id
+// //                   function bookingId(){
+// //                       var booking_id = [];
+                  
+// //                   for(var i=0;i<job.length;i++){
+// //                       booking_id.push(job[i].booking_id);
+// //                   }
+// //                   return booking_id ;
+// //                   }           
+
+
+//     connection.query('SELECT driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,truck.truck_id,truck.truck_type,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side,truck.damage_control FROM driver,truck WHERE driver.driver_id = ?',[driverId().join()],function(err,details){
+    
+    
+//         if(err){
+//             res.json({
+//                 status : false,
+//                 message : "Error Occured" + err
+//             });
+//         }else{
+//             res.json({
+//                 status : true,
+//                 message : details
+//             })
+//         }
+//     });
+//                     }
+           
+
+//     });
+
+//         connection.release();
+//     })
+// });
+
+
+
+
+
 //Customer viewing Bidding/Drivers List
 
 apiRoutes.post('/driverslist',function(req,res){
@@ -1026,52 +1408,324 @@ apiRoutes.post('/driverslist',function(req,res){
         }
 
     
-    connection.query('SELECT * FROM job_bidding WHERE booking_id = ?',[booking_id],function(err,job){
+    connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,truck.truck_id,truck.truck_type,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side,truck.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN truck ON job_bidding.driver_id = truck.driver_id WHERE job_bidding.booking_id = ?',[booking_id],function(err,job){
         if(err) throw err ;
 
         if(job == 0){
             res.json({
                 status : false,
-                message : "No jo listed here"
+                message : "No job listed here"
             })
         }else if(job != 0){
-
-                  function driverId(){
-                  var driver_id = [];
-
-                  for(var i=0;i<job.length;i++){
-                             driver_id.push(job[i].driver_id) ;
-                  }
-                  return  driver_id ;
-                  }             
-
-
-    connection.query('SELECT driver.driver_id,driver.driver_image,truck.truck_id,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side FROM driver,truck WHERE driver.driver_id = ?',[driverId().join()],function(err,details){
-    
-    
-        if(err){
-            res.json({
-                status : false,
-                message : "Error Occured" + err
-            });
-        }else{
             res.json({
                 status : true,
-                message : details
+                message : job
             })
-        }
-    });
-               
-
-                    }
-           
-
-
+        } 
     });
 
         connection.release();
     })
 });
+
+
+//Customer viewing Bidding/Drivers List - BUS
+
+apiRoutes.post('/driverslistbus',function(req,res){
+
+    var customer_id = req.headers['id'];
+
+    var booking_id = req.body.booking_id ;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                code : 100,
+                message : "Error in connecting Database"
+            })
+        }
+
+    
+    connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,bus.bus_id,bus.bus_type,bus.bus_image_front,bus.bus_image_back,bus.bus_image_side,bus.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN bus ON job_bidding.driver_id = bus.driver_id WHERE job_bidding.booking_id = ?',[booking_id],function(err,job){
+        if(err) throw err ;
+
+        if(job == 0){
+            res.json({
+                status : false,
+                message : "No job listed here"
+            })
+        }else if(job != 0){
+            res.json({
+                status : true,
+                message : job
+            })
+        } 
+    });
+
+        connection.release();
+    })
+});
+
+
+
+
+// //Notification Trial
+
+// apiRoutes.post('/notify',function(req,res){
+    
+//     var deviceId = req.body.device_id;
+
+//     var message = {
+//                 title: 'Movehaul Push Test',
+//                 body: 'Movehaul Push Notification Test Message'
+//     };
+
+
+//     function sendMessage(deviceid,message,success){
+        
+//         request({
+//             url: 'https://fcm.googleapis.com/fcm/send',
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type' : 'application/json',
+//                 'Authorization' : 'key='+serverkey
+//             },
+//             body: JSON.stringify({
+//                 notification: {
+//                     body: message
+//                 },
+//                 to: deviceid
+//             })
+//         },function(err,response,body){
+//             if(err){
+//                 res.json({
+//                     status: false,
+//                     message: "Error Occured "+ err
+//                 });
+//             }else if (response.statusCode >= 400) { 
+//            res.json({
+//                Error: response.statusCode +' - ' +response.statusMessage +'\n'+ response.body 
+//            }); 
+//             }else{
+//                 res.json({
+//                     status: true,
+//                     message: response
+//                 })
+//             }
+//         })
+
+//     }
+
+// sendMessage(deviceId,message);
+
+
+// });
+
+
+//Confirming payment to driver
+
+apiRoutes.post('/payment',function(req,res){
+
+    var customer_id = req.headers['id'];
+
+    var driver_id = req.body.driver_id ;
+    var bidding_id = req.body.bidding_id ;
+    var transaction_id = req.body.transaction_id ;
+    var booking_id = req.body.booking_id ;
+    
+    var confirmed_time = moment().add(5.5,'hours').format('YYYY/MM/MM T h:mm:ss') ;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+    connection.query('SELECT bidding_cost FROM job_bidding WHERE bidding_id = ?',[bidding_id],function(err,bidding){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured" + err
+            });
+        }else{
+            var job_cost = bidding[0].bidding_cost;
+
+    connection.query('UPDATE bookings SET driver_id = ?,bidding_id = ?,transaction_id = ?,job_cost = ?,job_status = ?,confirmed_time = ? WHERE booking_id = ?',[driver_id,bidding_id,transaction_id,job_cost,"confirmed",confirmed_time,booking_id],function(err,payment){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured" + err
+            });
+        }else{
+
+            connection.query('UPDATE driver SET driver_job_status = ? WHERE driver_id = ?',["booked",driver_id],function(err,driver){
+                if(err){
+                    res.json({
+                        status: false,
+                        message: "Error Occured" + err
+                    })
+                }else{
+                    
+
+                         connection.query('SELECT driver.fcm_id,customer.customer_name FROM driver,customer WHERE driver.driver_id = ? AND customer.customer_id = ?',[driver_id,customer_id],function(err,fcm){
+                if(err){
+                    res.json({
+                        status: false,
+                        message: "Error Occured" + err
+                    });
+                }else{
+
+                    var fcm_id = fcm[0].fcm_id ;
+
+                    var customer_name = fcm[0].customer_name ;
+                   
+                    var message = {
+                            title: "Job Confirmed",
+                            body: "Your job bidding was Booked",
+                            customer_name : customer_name
+                    }
+
+
+                    function sendMessage(deviceid,message,success){
+
+                        request({
+                            url: 'https://fcm.googleapis.com/fcm/send',
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'key='+serverkey
+                            },
+                            body: JSON.stringify({
+                                notification: {
+                                    body: message
+                                },
+                                to: deviceid
+                            })
+                        },function(err,response,body){
+                            if(err){
+                                res.json({
+                                    status: false,
+                                    message: "Error Occured" + err
+                                });
+                            }else if(response.statusCode >= 400){
+                                res.json({
+                                    Error: response.statusCode + '-' +response.statusMessage + '\n' + response.body
+                                });
+                            }else{
+                                res.json({
+                                    status: true
+                               //   message: response
+                                })
+                            }
+                        })
+
+                    }
+
+                sendMessage(fcm_id,message);
+
+                }
+            })
+
+                }
+
+            })
+
+        }
+    })
+
+        }
+
+    })
+
+     connection.release();
+    })
+
+
+});
+
+
+
+//customer viewing job history
+
+apiRoutes.post('/jobhistory',function(req,res){
+
+    var customer_id = req.headers['id'];
+    
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                code: 100,
+                message: 'Error in connecting Database'
+            });
+        }
+
+
+    connection.query('SELECT bookings.*,driver.driver_id,driver.driver_name,driver.driver_mobile_pri,driver.driver_mobile_sec,driver.driver_image FROM bookings INNER JOIN driver ON bookings.driver_id = driver.driver_id WHERE customer_id = ? AND job_status = ?',[customer_id,"confirmed"],function(err,info){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured" + err
+            });
+        }else{
+            res.json({
+                status: true,
+                message: info
+            })
+        }
+    });
+
+    connection.release();
+    })
+
+})
+
+
+// 
+
+
+apiRoutes.post('/nearbydrivers',function(req,res){
+
+    var customer_id = req.headers['id'];
+
+    var latitude = req.body.latitude;
+    var longitude = req.body.longitude;
+    var radius = req.body.radius;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                code: 100,
+                message: "Error in connecting database"
+            })
+        }
+
+    
+    connection.query('SELECT driver_id,driver_latitude,driver_longitude, ( 3959 * acos( cos( radians(' + latitude + ') ) * cos( radians( driver_latitude ) ) * cos( radians( driver_longitude ) - radians(' + longitude + ') ) + sin( radians(' + latitude + ') ) * sin( radians( driver_latitude ) ) ) ) AS distance FROM driver_location HAVING distance <' + radius + ' ORDER BY distance LIMIT 0 ,20',function(err,location){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            });
+        }else{
+            res.json({
+                status: true,
+                message: location
+            })
+        }
+    })
+
+
+
+
+    connection.release();
+    })
+
+
+})
+
+
 
 
 

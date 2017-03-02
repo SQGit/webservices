@@ -23,7 +23,9 @@ app.use(bodyParser.json());
 app.use(morgan('dev'));
 
 require('./app/routes/customer.js')(app);
-require('./app/routes/driver.js')(app);
+require('./app/routes/truckdriver.js')(app);
+require('./app/routes/busdriver.js')(app);
+require('./app/routes/assistance.js')(app);
 
 app.listen(port);
 console.log("Server running at http://localhost:" + port);
