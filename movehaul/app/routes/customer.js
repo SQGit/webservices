@@ -15,6 +15,8 @@ var verifier = require('email-verify')
 
 var request = require('request');
 
+//fcm targets driver
+
 var serverkey  = 'AAAAzGfmywU:APA91bEsExIN0HQyaLR-ASpD5n2Tzg3bAT-8Us_2tNITIU1XOYXX_z1fY4a5misiQXE-Vh14fIa5NUQ7pNE5yMdHnjA9hoKMayPkBFRUuCF-lCYPRNA7Hqy2z7jITF7bc1Ai-K5eDVxU1zSMhNrjvtgixEjiFgLzpg'
 
 
@@ -82,6 +84,72 @@ module.exports = function(app){
 
 
 
+
+
+
+
+
+app.post('/driverslist',function(req,res){
+
+    var customer_id = req.headers['id'];
+
+    var booking_id = req.body.booking_id ;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                code : 100,
+                message : "Error in connecting Database"
+            })
+        }
+
+    
+    connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,truck.truck_id,truck.truck_type,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side,truck.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN truck ON job_bidding.driver_id = truck.driver_id WHERE job_bidding.booking_id = ?',[booking_id],function(err,job){
+        if(err) throw err ;
+
+        if(job == 0){
+            res.json({
+                status : false,
+                message : "No job listed here"
+            })
+        }else if(job != 0){
+            res.json({
+                status : true,
+                message : job
+            })
+        } 
+    });
+
+        connection.release();
+    })
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//emergencypayment service have to include the no drivers message
 
 
 
@@ -165,7 +233,7 @@ app.post('/customersignup',function(req,res){
     var fake_id = "MOVC" + num2 + char2 + num1 ;
     
     
-    var customersignup = {customer_name:req.body.customer_name,customer_mobile:req.body.customer_mobile,customer_email:req.body.customer_email,created_date:created,fake_id : fake_id};
+    var customersignup = {customer_name:req.body.customer_name,customer_mobile:req.body.customer_mobile,customer_email:req.body.customer_email,created_date:created,fake_id : fake_id,fcm_id: req.body.fcm_id};
 
     pool.getConnection(function(err,connection){
         if(err){
@@ -294,6 +362,8 @@ app.post('/emailvalidate',function(req,res){
 app.post('/customermobileotp',function(req,res){
     var customermobile = req.body.customer_mobile ;
     var otp = Math.floor(Math.random()*9000)+1000;
+
+
 
     pool.getConnection(function(err,connection){
         if(err){
@@ -541,6 +611,8 @@ apiRoutes.post('/mobilelogin',function(req,res){
         var customermobile = req.body.customer_mobile;
         var customer_otp = req.body.customer_otp;
 
+        var fcm_id = req.body.fcm_id;
+
         pool.getConnection(function(err,connection){
         if(err){
             res.json({
@@ -572,17 +644,35 @@ apiRoutes.post('/mobilelogin',function(req,res){
                     var customer_email = mobile[0].customer_email;
                     var customer_name = mobile[0].customer_name;
                     var customer_image = mobile[0].customer_image;
-                    res.json({
-                        status : true,
-                        message : "Logged in successfully",
-                        customer_id : customer_id,
-                        fake_id : fake_id,
-                        customer_mobile : customer_mobile,
-                        customer_email : customer_email,
-                        customer_name : customer_name,
-                        customer_image : customer_image,
-                        token : token
-                    });
+
+                    connection.query('UPDATE customer SET fcm_id = ? WHERE customer_id = ?',[fcm_id,customer_id],function(err,fcm){
+                        if(err){
+                            res.json({
+                                status: false,
+                                message: "Error Occured " + err
+                            })
+                        }else{
+
+
+                                res.json({
+                                    status : true,
+                                    message : "Logged in successfully",
+                                    customer_id : customer_id,
+                                    fake_id : fake_id,
+                                    customer_mobile : customer_mobile,
+                                    customer_email : customer_email,
+                                    customer_name : customer_name,
+                                    customer_image : customer_image,
+                                    token : token
+                                });
+
+
+
+                        }
+
+                    })
+
+                  
                 }
             }
         });
@@ -595,6 +685,8 @@ apiRoutes.post('/mobilelogin',function(req,res){
 apiRoutes.post('/emaillogin',function(req,res){
         var customeremail = req.body.customer_email;
         var customer_otp = req.body.customer_otp;
+
+        var fcm_id = req.body.fcm_id;
 
         pool.getConnection(function(err,connection){
         if(err){
@@ -628,17 +720,30 @@ apiRoutes.post('/emaillogin',function(req,res){
                     var customer_name = email[0].customer_name;
                     var customer_image = email[0].customer_image;
 
-                    res.json({
-                        status : true,
-                        message : "Logged in successfully",
-                        customer_id : customer_id,
-                        fake_id : fake_id,
-                        customer_mobile : customer_mobile,
-                        customer_email : customer_email,
-                        customer_name : customer_name,
-                        customer_image : customer_image,
-                        token : token
-                    });
+                    connection.query('UPDATE customer SET fcm_id = ? WHERE customer_id = ?',[fcm_id,customer_id],function(err,fcm){
+                        if(err){
+                            res.json({
+                                status: false,
+                                message: "Error Occured " + err
+                            })
+                        }else{
+
+                                res.json({
+                                    status : true,
+                                    message : "Logged in successfully",
+                                    customer_id : customer_id,
+                                    fake_id : fake_id,
+                                    customer_mobile : customer_mobile,
+                                    customer_email : customer_email,
+                                    customer_name : customer_name,
+                                    customer_image : customer_image,
+                                    token : token
+                                });
+
+                        }
+                    })
+
+                  
                 }
             }
         });
@@ -832,6 +937,7 @@ apiRoutes.post('/getemergency',function(req,res){
 
 // Customer Adding Emergency Contacts
 
+
 apiRoutes.post('/insertemergency',function(req,res){
     
     var customer_id = req.headers['id'];
@@ -843,11 +949,15 @@ apiRoutes.post('/insertemergency',function(req,res){
             throw err;
         }
 
-    connection.query('SELECT * FROM customer_emergency WHERE customer_id = ?',[customer_id],function(err,emergency){
+    connection.query('SELECT COUNT(*) AS count FROM customer_emergency WHERE customer_id = ?',[customer_id],function(err,emergency){
         if(err) throw err ;
-         
-        
-        if(emergency == 0){
+
+        if(emergency[0].count >= 2){
+            res.json({
+                    status : false,
+                    message : "Not more than 2 contacts can be added for Emergency"
+            });
+        }else{
             connection.query('INSERT INTO customer_emergency SET emergency_name = ?, emergency_mobile = ?,emergency_relation = ?, customer_id = ?' ,[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customer_id],function(err,save){
                 if(err){
                     res.json({
@@ -861,25 +971,6 @@ apiRoutes.post('/insertemergency',function(req,res){
                     });
                 }
             });
-        }else if(emergency == 1){
-            connection.query('INSERT INTO customer_emergency SET emergency_name = ?, emergency_mobile = ?,emergency_relation = ?, customer_id = ?',[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customer_id],function(err,save){
-                if(err){
-                    res.json({
-                        status : false,
-                        message : "Error Occured" + err
-                    });
-                }else{
-                    res.json({
-                        status : true,
-                        message : "Emergency contact added successfully"
-                    });
-                }
-            });
-        }else{
-            res.json({
-                    status : false,
-                    message : "Not more than 2 contacts can be added for Emergency"
-            });
         }
 
     });
@@ -888,20 +979,26 @@ apiRoutes.post('/insertemergency',function(req,res){
 
 });
 
+
+
 //Customer Updating Emergency contacts
 
 apiRoutes.post('/updateemergency',function(req,res){
     
     var customer_id = req.headers['id'];
 
-    var customerEmergency = { emergency_id : req.body.emergency_id,emergency_name : req.body.emergency_name,emergency_mobile : req.body.emergency_mobile,emergency_relation : req.body.emergency_relation};
+
+    var emergency_id = req.body.emergency_id;
+    var emergency_name = req.body.emergency_name;
+    var emergency_mobile = req.body.emergency_mobile;
+    var emergency_relation = req.body.emergency_relation;
 
     pool.getConnection(function(err,connection){
         if(err){
             throw err;
         }
 
-    connection.query('UPDATE customer_emergency SET emergency_name = ?,emergency_mobile = ?, emergency_relation = ? WHERE emergency_id = ?',[customerEmergency.emergency_name,customerEmergency.emergency_mobile,customerEmergency.emergency_relation,customer_id],function(err,update){
+    connection.query('UPDATE customer_emergency SET emergency_name = ?,emergency_mobile = ?, emergency_relation = ? WHERE emergency_id = ?',[emergency_name,emergency_mobile,emergency_relation,emergency_id],function(err,update){
         if(err){
             res.json({
                 status : false,
@@ -919,40 +1016,33 @@ apiRoutes.post('/updateemergency',function(req,res){
     });
 });
 
+
 // Customer finding Driver Location
 
 apiRoutes.post('/finddrivers',function(req,res){
    
     var customer_id = req.headers['id'];
 
-    var customerlocation = { customer_latitude : req.body.customer_latitude,customer_longitude : req.body.customer_longitude,customer_locality : req.body.customer_locality };
+    var latitude = req.body.latitude;
+    var longitude = req.body.longitude;
 
     pool.getConnection(function(err,connection){
         if(err){
             throw err;
         }
 
-    connection.query('SELECT * FROM driver WHERE driver_status = ?',["active"],function(err,active){
+    connection.query('SELECT driver.driver_id,truck.truck_type,driver_location.driver_latitude,driver_location.driver_longitude, ( 3959 * acos( cos( radians(' + latitude + ') ) * cos( radians( driver_latitude ) ) * cos( radians( driver_longitude ) - radians(' +longitude + ') ) + sin( radians(' + latitude + ') ) * sin( radians( driver_latitude ) ) ) ) AS distance FROM driver INNER JOIN truck ON driver.driver_id = truck.driver_id INNER JOIN driver_location ON driver.driver_id = driver_location.driver_id WHERE driver.driver_status = ? HAVING distance < 10 ',["active"],function(err,active){
         if(err){
             res.json({
                 status : false,
                 message : "Error Occured" + err
              });
         }else{
-
-            connection.query('SELECT * FROM driver_location WHERE driver_locality1 = ? ',[customerlocation.customer_locality],function(err,locality){
-        if(err){
             res.json({
-                status : false,
-                message : "Error Occured" + err
-            });
-        }else{
-            res.json({
-                status : true,
-                message : locality
-            });
-        }
-    });
+                status: true,
+                message: active //change
+            })
+        
 
         }
     })
@@ -1084,6 +1174,8 @@ apiRoutes.post('/booking',function(req,res){
     var pickup_latitude = req.headers['pickup_latitude'] || req.body.pickup_latitude ;
     var pickup_longitude = req.headers['pickup_longitude'] || req.body.pickup_longitude ;
     var drop_location = req.headers['drop_location'] || req.body.drop_location ;
+    var drop_latitude = req.headers['drop_latitude'] || req.body.drop_latitude ;
+    var drop_longitude = req.headers['drop_longitude'] || req.body.drop_longitude ;
     var goods_type = req.headers['goods_type'] || req.body.goods_type ;
     var vehicle_type = req.headers['vehicle_type'] || req.body.vehicle_type;
     var vehicle_main_type = req.headers['vehicle_main_type'] || req.body.vehicle_main_type;
@@ -1249,7 +1341,7 @@ apiRoutes.post('/booking',function(req,res){
 
 
 
-            connection.query('INSERT INTO bookings SET customer_id = ?,pickup_location = ?,pickup_latitude = ?,pickup_longitude = ?,drop_location = ?,delivery_address = ?, goods_type = ?,vehicle_type = ?,vehicle_main_type = ?,vehicle_sub_type = ?,description = ?,booking_time = ?,radius = ?,job_status = ?,goods_image1 = ?,goods_image2 = ?,goods_image3 = ?,goods_image4 = ?,goods_image5 = ?',[customer_id,pickup_location,pickup_latitude,pickup_longitude,drop_location,delivery_address,goods_type,vehicle_type,vehicle_main_type,vehicle_sub_type,description,booking_time,"ten","waiting",bookinggoods1,bookinggoods2,bookinggoods3,bookinggoods4,bookinggoods5],function(err,book){
+            connection.query('INSERT INTO bookings SET customer_id = ?,pickup_location = ?,pickup_latitude = ?,pickup_longitude = ?,drop_location = ?,drop_latitude = ?,drop_longitude = ?,delivery_address = ?, goods_type = ?,vehicle_type = ?,vehicle_main_type = ?,vehicle_sub_type = ?,description = ?,booking_time = ?,radius = ?,job_status = ?,goods_image1 = ?,goods_image2 = ?,goods_image3 = ?,goods_image4 = ?,goods_image5 = ?',[customer_id,pickup_location,pickup_latitude,pickup_longitude,drop_location,drop_latitude,drop_longitude,delivery_address,goods_type,vehicle_type,vehicle_main_type,vehicle_sub_type,description,booking_time,"ten","waiting",bookinggoods1,bookinggoods2,bookinggoods3,bookinggoods4,bookinggoods5],function(err,book){
 
 
                 if(err){
@@ -1272,6 +1364,102 @@ apiRoutes.post('/booking',function(req,res){
             connection.release();
     })
 })
+
+
+
+
+//Emergency Booking
+
+
+apiRoutes.post('/emergencybooking',function(req,res){
+
+
+    var customer_id = req.headers['id'];
+    var pickup_location = req.headers['pickup_location'] || req.body.pickup_location ;
+    var pickup_latitude = req.headers['pickup_latitude'] || req.body.pickup_latitude ;
+    var pickup_longitude = req.headers['pickup_longitude'] || req.body.pickup_longitude ;
+    var drop_location = req.headers['drop_location'] || req.body.drop_location ;
+    var drop_latitude = req.headers['drop_latitude'] || req.body.drop_latitude ;
+    var drop_longitude = req.headers['drop_longitude'] || req.body.drop_longitude ;
+    var goods_type = req.headers['goods_type'] || req.body.goods_type ;
+    var vehicle_type = req.headers['vehicle_type'] || req.body.vehicle_type;
+    var vehicle_main_type = req.headers['vehicle_main_type'] || req.body.vehicle_main_type;
+    var vehicle_sub_type = req.headers['vehicle_sub_type'] || req.body.vehicle_sub_type ;                             //Previously truck_type
+    var description = req.headers['description'] || req.body.description ;
+    var booking_time = req.headers['booking_time'] || req.body.booking_time ;
+    var delivery_address = req.headers['delivery_address'] || req.body.delivery_address ;
+  
+
+
+    
+    // M = 3959
+    // K = 6371
+
+
+
+    function getDistanceFromLatLonInMile(lat1,lon1,lat2,lon2) {
+        var R = 3959; 
+        var dLat = deg2rad(lat2-lat1);  
+        var dLon = deg2rad(lon2-lon1); 
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        var d = R * c; 
+        return d;
+   }
+
+
+  
+
+
+    function deg2rad(deg) {
+        return deg * (Math.PI/180)
+    }
+
+    
+    var distance = getDistanceFromLatLonInMile(pickup_latitude,pickup_longitude,drop_latitude,drop_longitude);
+    var price = Math.ceil(distance * 250);
+
+
+
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting database"
+            })
+        }
+
+
+
+            connection.query('INSERT INTO bookings SET customer_id = ?,pickup_location = ?,pickup_latitude = ?,pickup_longitude = ?,drop_location = ?,drop_latitude = ?,drop_longitude = ?,delivery_address = ?, goods_type = ?,vehicle_type = ?,vehicle_main_type = ?,vehicle_sub_type = ?,description = ?,booking_time = ?,radius = ?,job_status = ?,job_cost = ?',[customer_id,pickup_location,pickup_latitude,pickup_longitude,drop_location,drop_latitude,drop_longitude,delivery_address,goods_type,vehicle_type,vehicle_main_type,vehicle_sub_type,description,booking_time,"ten","waiting",price],function(err,book){
+
+
+                if(err){
+                    res.json({
+                        status :false,
+                        message : "Error Occured" + err
+                    })
+                }else{
+                    res.json({
+                        status : true,
+                        message : "Your Post has been added successfully",
+                        booking_id : book.insertId,
+                        price : price
+                    });
+
+                }
+        });
+
+        connection.release();
+    })
+
+
+})
+
+
+
 
 
 
@@ -1533,11 +1721,12 @@ apiRoutes.post('/payment',function(req,res){
     var transaction_id = req.body.transaction_id ;
     var booking_id = req.body.booking_id ;
     
-    var confirmed_time = moment().add(5.5,'hours').format('YYYY/MM/MM T h:mm:ss') ;
+    var confirmed_time = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss a') ;
 
     pool.getConnection(function(err,connection){
         if(err){
             res.json({
+                status: false,
                 code: 100,
                 message: "Error in connecting Database"
             })
@@ -1647,6 +1836,157 @@ apiRoutes.post('/payment',function(req,res){
 
 
 
+//Emergency payment
+
+
+
+apiRoutes.post('/emergencypayment',function(req,res){
+
+    var customer_id = req.headers['id'];
+
+    var transaction_id = req.body.transaction_id;
+    var booking_id = req.body.booking_id;
+
+    var confirmed_time = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss a')
+
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in Connecting Database"
+            })
+        }
+
+    
+    connection.query('SELECT pickup_latitude,pickup_longitude FROM bookings WHERE booking_id = ?',[booking_id],function(err,booking){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err 
+            })
+        }else{
+
+          var latitude = booking[0].pickup_latitude;
+          var longitude = booking[0].pickup_longitude;
+          var radius = 100;
+         
+
+
+    connection.query('SELECT driver.driver_name,driver.driver_email,driver_location.driver_id,driver_location.driver_latitude,driver_location.driver_longitude, ( 3959 * acos( cos( radians(' + latitude + ') ) * cos( radians( driver_location.driver_latitude ) ) * cos( radians( driver_location.driver_longitude ) - radians(' + longitude + ') ) + sin( radians(' + latitude + ') ) * sin( radians( driver_location.driver_latitude ) ) ) ) AS distance FROM driver_location INNER JOIN driver ON driver_location.driver_id = driver.driver_id WHERE driver.vehicle_type = ? HAVING distance <' + radius + ' ORDER BY distance LIMIT 0 ,1',["Road"],function(err,driver){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            });
+        }else{
+
+            var driver_id = driver[0].driver_id;
+
+
+            connection.query('UPDATE bookings SET driver_id = ?,transaction_id = ?,job_status = ?,confirmed_time = ? WHERE booking_id = ?',[driver_id,transaction_id,"confirmed",confirmed_time,booking_id],function(err,payment){
+                if(err){
+                    res.json({
+                        status: false,
+                        message: "Error Occured " + err
+                    })
+                }else{
+
+                    connection.query('UPDATE driver SET driver_job_status = ? WHERE driver_id = ?',["booked",driver_id],function(err,drivernew){
+                        if(err){
+                            res.json({
+                                status: false,
+                                message: "Error Occured " + err
+                            })
+                        }else{
+
+                            connection.query('SELECT driver.fcm_id,customer.customer_name FROM driver,customer WHERE driver.driver_id = ? AND customer.customer_id = ?',[driver_id,customer_id],function(err,fcm){
+                                if(err){
+                                    res.json({
+                                        status: false,
+                                        message: "Error Occured " + err
+                                    })
+                                }else{
+
+                                    var fcm_id = fcm[0].fcm_id;
+
+                                    var customer_name = fcm[0].customer_name ;
+
+                                    var message = {
+                                        title: "Job Confirmed",
+                                        body: "Emergency Request",
+                                        customer_name: customer_name
+                                    }
+
+                                    function sendMessage(deviceid,message,success){
+
+                                        request({
+                                            url: 'https://fcm.googleapis.com/fcm/send',
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Authorization': 'key='+serverkey
+                                            },body: JSON.stringify({
+                                                notification: {
+                                                    body: message
+                                                },
+                                                to: deviceid
+                                            })
+                                        },function(err,response,body){
+                                            if(err){
+                                                res.json({
+                                                    status: false,
+                                                    message: "Error Occured " + err
+                                                })
+                                            }else if(response.statusCode >= 400){
+                                                res.json({
+                                                     Error: response.statusCode + '-' +response.statusMessage + '\n' + response.body
+                                                })
+                                            }else{
+                                res.json({
+                                    status: true
+                               //   message: response
+                                })
+                            }
+                                        })
+
+                                    }
+                            sendMessage(fcm_id,message);
+                                }
+                            })
+                        }
+                    })
+
+                }
+            })
+
+
+
+        }
+    })
+
+
+
+        }
+
+    })
+
+
+
+
+        connection.release();
+    })
+
+
+})
+
+
+
+
+
+
+
 //customer viewing job history
 
 apiRoutes.post('/jobhistory',function(req,res){
@@ -1662,7 +2002,7 @@ apiRoutes.post('/jobhistory',function(req,res){
         }
 
 
-    connection.query('SELECT bookings.*,driver.driver_id,driver.driver_name,driver.driver_mobile_pri,driver.driver_mobile_sec,driver.driver_image FROM bookings INNER JOIN driver ON bookings.driver_id = driver.driver_id WHERE customer_id = ? AND job_status = ?',[customer_id,"confirmed"],function(err,info){
+    connection.query('SELECT bookings.*,driver.driver_id,driver.driver_name,driver.driver_mobile_pri,driver.driver_mobile_sec,driver.driver_image FROM bookings INNER JOIN driver ON bookings.driver_id = driver.driver_id WHERE customer_id = ?',[customer_id],function(err,info){
         if(err){
             res.json({
                 status: false,
@@ -1682,7 +2022,54 @@ apiRoutes.post('/jobhistory',function(req,res){
 })
 
 
-// 
+//waiting jobs
+
+
+
+
+apiRoutes.post('/waitingjobs',function(req,res){
+
+    var customer_id = req.headers['id'];
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+    
+    connection.query('SELECT booking_id,pickup_location,drop_location,booking_time,(SELECT COUNT(bidding_id) FROM job_bidding WHERE job_bidding.booking_id = bookings.booking_id)count FROM bookings WHERE customer_id = ? AND job_status = ?',[customer_id,"waiting",],function(err,bookings){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+               res.json({
+                   status: true,
+                   message: bookings
+               })
+        }
+    })
+
+
+
+        connection.release();
+    })
+    
+})
+
+
+
+
+
+
+
+
+
+// Nearby Drivers
 
 
 apiRoutes.post('/nearbydrivers',function(req,res){
@@ -1727,6 +2114,152 @@ apiRoutes.post('/nearbydrivers',function(req,res){
 
 
 
+
+//Customer Deleting his bookings
+
+
+
+apiRoutes.post('/deletebooking',function(req,res){
+
+    var customer_id = req.headers['id'];
+    var booking_id = req.body.booking_id;
+
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+
+    connection.query('DELETE FROM bookings WHERE booking_id = ?',[booking_id],function(err,done){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message: "Your Booking has been successfully deleted"
+            })
+        }
+    })
+
+
+        connection.release();
+    })
+})
+
+
+// Cancel job
+
+
+apiRoutes.post('/canceljob',function(req,res){
+
+    var customer_id = req.headers['id'];
+    var driver_id = req.body.driver_id;
+    var booking_id = req.body.booking_id;
+
+    var cancelled_time = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss')
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+            
+        
+    connection.query('UPDATE bookings SET job_status = ?,cancelled_time = ? WHERE booking_id = ?',["cancelled",cancelled_time,booking_id],function(err,cancelled){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error occured " + err
+            })
+        }else{
+            
+            
+
+             connection.query('SELECT driver.fcm_id,customer.customer_name FROM driver,customer WHERE driver.driver_id = ? AND customer.customer_id = ?',[driver_id,customer_id],function(err,fcm){
+                if(err){
+                    res.json({
+                        status: false,
+                        message: "Error Occured" + err
+                    });
+                }else{
+
+                    var fcm_id = fcm[0].fcm_id ;
+
+                    var customer_name = fcm[0].customer_name ;
+                   
+                    var message = {
+                            title: "Job Cancelled",
+                            body: "Your current job has been cancelled by the customer",
+                            customer_name : customer_name
+                    }
+
+
+                    function sendMessage(deviceid,message,success){
+
+                        request({
+                            url: 'https://fcm.googleapis.com/fcm/send',
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'key='+serverkey
+                            },
+                            body: JSON.stringify({
+                                notification: {
+                                    body: message
+                                },
+                                to: deviceid
+                            })
+                        },function(err,response,body){
+                            if(err){
+                                res.json({
+                                    status: false,
+                                    message: "Error Occured" + err
+                                });
+                            }else if(response.statusCode >= 400){
+                                res.json({
+                                    Error: response.statusCode + '-' +response.statusMessage + '\n' + response.body
+                                });
+                            }else{
+                                res.json({
+                                    status: true
+                               //   message: response
+                                })
+                            }
+                        })
+
+                    }
+
+                sendMessage(fcm_id,message);
+
+                }
+            })
+         
+
+
+
+
+        }
+    })
+
+
+
+
+       
+       connection.release();
+    })
+
+})
 
 
 

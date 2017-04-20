@@ -11,8 +11,12 @@ var port = process.env.PORT || 3022;
 app.set('superSecret',config.secret);
 
 app.use(express.static('public'));
+app.use('/medikally',express.static('public'));
+
+app.use('/public',express.static(__dirname + '/public'));
 
 app.use('/img',express.static(__dirname + 'C:/wamp64/www/medikally/assets/img'))
+app.use('/videos',express.static(__dirname + 'C:/wamp64/www/medikally/assets/videos'))
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());

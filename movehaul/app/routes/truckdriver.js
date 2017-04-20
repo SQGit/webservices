@@ -12,6 +12,13 @@ var verifier = require('email-verify');
 var pool = require('../connection');
 
 
+var request = require('request');
+
+//fcm targets customer
+
+var serverkey  = 'AAAAp8ZdwnU:APA91bHpgNvT5dkCgnjN0-FOA62FpIgwW7NBUzED_2LvzZIvOFaCyo-Bz2zLZH05GYSxbfCiRjK0B-QWlxM1e875cvKhb3uiO-aUSwjp5uNlhh2EjZU3k6n_6HDLvNGJ8xW7cOWKfvjl'
+
+
 //Twilio Configuration
 
 var twilio = require('twilio');
@@ -93,7 +100,7 @@ module.exports = function(app){
 
 
 
-
+//
 
 
 
@@ -630,6 +637,7 @@ truckRoutes.post('/mobilelogin',function(req,res){
                                     message: "Error Occured " + err
                                 });
                             }else{
+
 
                                         
                                         res.json({
@@ -1927,7 +1935,7 @@ truckRoutes.post('/showjobs',function(req,res){
         }
 
     
-    connection.query('SELECT booking_id,customer_id,pickup_location,drop_location,delivery_address,goods_type,vehicle_type,description,goods_image1,goods_image2,goods_image3,goods_image4,goods_image5,booking_time, ( 3959 * acos( cos( radians(' + latitude + ') ) * cos( radians( pickup_latitude ) ) * cos( radians( pickup_longitude ) - radians(' +longitude + ') ) + sin( radians(' + latitude + ') ) * sin( radians( pickup_latitude ) ) ) ) AS distance FROM bookings WHERE job_status = ? AND goods_type NOT IN(?,?) AND booking_id NOT IN (SELECT booking_id FROM job_bidding WHERE driver_id =' + driver_id + ')' + 'HAVING distance <' + radius +' ORDER BY distance LIMIT 0 , 20 ',["waiting","passenger","vehicle"],function(err,job){
+    connection.query('SELECT booking_id,customer_id,pickup_location,drop_location,delivery_address,goods_type,vehicle_type,description,goods_image1,goods_image2,goods_image3,goods_image4,goods_image5,booking_time, ( 3959 * acos( cos( radians(' + latitude + ') ) * cos( radians( pickup_latitude ) ) * cos( radians( pickup_longitude ) - radians(' +longitude + ') ) + sin( radians(' + latitude + ') ) * sin( radians( pickup_latitude ) ) ) ) AS distance FROM bookings WHERE job_status = ? AND goods_type NOT IN(?,?) AND booking_id NOT IN (SELECT booking_id FROM job_bidding WHERE driver_id =' + driver_id + ')' + 'HAVING distance <' + radius +' ORDER BY distance LIMIT 0 , 20 ',["waiting","passenger","Road"],function(err,job){
         if(err){
             res.json({
                 status : false,
@@ -1970,10 +1978,65 @@ truckRoutes.post('/jobbidding',function(req,res){
                         message : "Error Occured" + err
                     })
                 }else{
-                    res.json({
-                        status : true,
-                        message : "You have successfully bidded for the job"
-                    });
+
+
+                   connection.query('SELECT bookings.customer_id,customer.customer_id,customer.customer_name,customer.fcm_id FROM bookings INNER JOIN customer ON bookings.customer_id = customer.customer_id WHERE bookings.booking_id = ?',[booking_id],function(err,bookings){
+                       if(err){
+                           res.json({
+                               status: false,
+                               message: "Error Occured " + err
+                           })
+                       }else{
+
+                        var fcm_id = bookings[0].fcm_id
+
+                        var message = {
+                            title: "Job Bidded",
+                            body: "A Bidding has been placed for your job"
+                        }
+                         
+                        
+                        function sendMessage(deviceid,message,success){
+
+                            request({
+                                url: 'https://fcm.googleapis.com/fcm/send',
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'key='+serverkey
+                                },body: JSON.stringify({
+                                    notification: {
+                                        body: message
+                                    },
+                                    to: deviceid
+                                })
+                            },function(err,response,body){
+                                if(err){
+                                    res.json({
+                                        status: false,
+                                        message: "Error Occured " + err
+                                    })
+                                }else if(response.statusCode >= 400){
+                                    res.json({
+                                                     Error: response.statusCode + '-' +response.statusMessage + '\n' + response.body
+                                                })
+                                }else{
+                                    res.json({
+                                        status: true
+                                    })
+                                }
+                            })
+
+                        }
+
+                        sendMessage(fcm_id,message);
+
+
+                       }
+                   })
+
+
+
                 }
         });
 
@@ -2066,8 +2129,13 @@ truckRoutes.post('/finishjob',function(req,res){
                 message: "Error Occured "+ err
             });
         }else{
-            connection.query('UPDATE bookings SET job_completed_time = ? WHERE booking_id = ?',[job_completed_time,booking_id],function(err,bookings){
+            connection.query('UPDATE bookings SET job_completed_time = ?,job_status = ? WHERE booking_id = ?',[job_completed_time,"finished",booking_id],function(err,bookings){
                 if(err){
+                        res.json({
+                        status: false,
+                        message: "Error Occured "+ err
+                });
+                }else{
                     res.json({
                         status: true,
                         message: "Current job has been successfully completed and you can bid for new job"
@@ -2081,7 +2149,117 @@ truckRoutes.post('/finishjob',function(req,res){
         connection.release();
     })
 
+});
+
+
+
+
+//Bank Details Update
+
+
+truckRoutes.post('/bankupdate',function(req,res){
+
+
+    var driver_id = req.headers['id'];
+
+    var bank_name = req.body.bank_name;
+    var routing_number = req.body.routing_number;
+    var account_number = req.body.account_number;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+    
+    connection.query('SELECT * FROM driver_bank WHERE driver_id = ?',[driver_id],function(err,bank){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else if(bank.length != 1){
+            connection.query('INSERT INTO driver_bank SET driver_id = ?,bank_name = ?,routing_number = ?,account_number = ?',[driver_id,bank_name,routing_number,account_number],function(err,insert){
+                if(err){
+                    res.json({
+                        status: false,
+                        message: "Error Occured " + err
+                    })
+                }else{
+                    res.json({
+                        status: true,
+                        message: "Bank Details has been Added successfully"
+                    })
+                }
+            })
+        }else if(bank.length == 1){
+            connection.query('UPDATE driver_bank SET bank_name = ?,routing_number = ?,account_number = ? WHERE driver_id = ?',[bank_name,routing_number,account_number,driver_id],function(err,update){
+                if(err){
+                    res.json({
+                        status: false,
+                        message: "Error Occured " + err
+                    })
+                }else{
+                    res.json({
+                        status: true,
+                        message: "Bank Details has been Updated successfully"
+                    })
+                }
+            })
+        }
+    })
+
+
+
+        connection.release();
+    })
+
+
 })
+
+
+//View Bank Details
+
+truckRoutes.post('/viewbankdetails',function(req,res){
+
+    var driver_id = req.headers['id'];
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+
+    connection.query('SELECT * FROM driver_bank WHERE driver_id = ?',[driver_id],function(err,details){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message: details
+            })
+        }
+    })
+
+
+
+
+        connection.release();
+    })
+
+})
+
 
 
 

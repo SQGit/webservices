@@ -1,0 +1,33 @@
+
+Template Name 	medikallyorderadmin  	Company Name 	Medikally  	Requested At 	2017-03-17 14:50:31 
+Sender Id 	MdOrdr  	Company Website 	http://www.medikally.com  	Approval Status 	APPROVED 
+Nature Of SMS 	Transactional  	Purpose of Sender Id 	To notify the Admin that a new order has been placed.  	Is Open Template 	N 
+Rejection Reason 	  	SMS Template 	A New Order has been placed in Medikally  	  
+	 
+Template Name 	medikallylicence  	Company Name 	Medikally  	Requested At 	2017-03-17 18:42:41 
+Sender Id 	medLic  	Company Website 	http://www.medikally.com  	Approval Status 	PENDING 
+Nature Of SMS 	Transactional  	Purpose of Sender Id 	To notify the Admin that an User has uploaded his Licence details  	Is Open Template 	N 
+Rejection Reason 	  	SMS Template 	"An User has uploaded his Licence Details. Please verify!"  	  	 
+
+Template Name 	medikallynew  	Company Name 	Medikally  	Requested At 	2017-03-17 18:40:27 
+Sender Id 	medNew  	Company Website 	http://www.medikally.com  	Approval Status 	PENDING 
+Nature Of SMS 	Transactional  	Purpose of Sender Id 	To notify the Admin that a new User has been registered with Medikally  	Is Open Template 	N 
+Rejection Reason 	  	SMS Template 	"A new user has been Registered with Medikally"  	  	 
+
+Template Name 	medikallyorder  	Company Name 	Medikally  	Requested At 	2017-03-17 14:47:19 
+Sender Id 	MedOrd  	Company Website 	http://www.medikally.com  	Approval Status 	APPROVED 
+Nature Of SMS 	Transactional  	Purpose of Sender Id 	To notify the customer that their order has been placed successfully.  	Is Open Template 	N 
+Rejection Reason 	  	SMS Template 	Hi #VAR1#,Your order has been placed successfully  	  	 
+
+Template Name 	medikallyotp  	Company Name 	Medikally  	Requested At 	2017-03-17 14:53:19 
+Sender Id 	medOtp  	Company Website 	http://www.medikally.com  	Approval Status 	APPROVED 
+Nature Of SMS 	Transactional  	Purpose of Sender Id 	One Time Password for clients  	Is Open Template 	N 
+Rejection Reason 	  	SMS Template 	Hi #VAR1#,Your one time password for Medikally is #VAR2#  	  	 
+
+
+
+
+Template Name 	medikallyverification  	Company Name 	Medikally  	Requested At 	2017-03-17 15:34:49 
+Sender Id 	medVer  	Company Website 	http://www.medikally.com  	Approval Status 	APPROVED 
+Nature Of SMS 	Transactional  	Purpose of Sender Id 	To notify the customer that their Medical Licence is approved  	Is Open Template 	N 
+Rejection Reason 	  	SMS Template 	Hi #VAR1#, Your License verified. Now You can login our app and Take Orders.  	

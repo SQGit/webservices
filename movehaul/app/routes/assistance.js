@@ -1500,6 +1500,11 @@ assistanceRoutes.post('/finishjob',function(req,res){
         }else{
             connection.query('UPDATE bookings SET job_completed_time = ? WHERE booking_id = ?',[job_completed_time,booking_id],function(err,bookings){
                 if(err){
+                        res.json({
+                        status: false,
+                        message: "Error Occured "+ err
+                });
+                }else{
                     res.json({
                         status: true,
                         message: "Current job has been successfully completed and you can bid for new job"
@@ -1514,6 +1519,122 @@ assistanceRoutes.post('/finishjob',function(req,res){
     })
 
 })
+
+
+
+
+
+//Bank Details Update
+
+
+assistanceRoutes.post('/bankupdate',function(req,res){
+
+
+    var driver_id = req.headers['id'];
+
+    var bank_name = req.body.bank_name;
+    var routing_number = req.body.routing_number;
+    var account_number = req.body.account_number;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+    
+    connection.query('SELECT * FROM driver_bank WHERE driver_id = ?',[driver_id],function(err,bank){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else if(bank.length != 1){
+            connection.query('INSERT INTO driver_bank SET driver_id = ?,bank_name = ?,routing_number = ?,account_number = ?',[driver_id,bank_name,routing_number,account_number],function(err,insert){
+                if(err){
+                    res.json({
+                        status: false,
+                        message: "Error Occured " + err
+                    })
+                }else{
+                    res.json({
+                        status: true,
+                        message: "Bank Details has been Added successfully"
+                    })
+                }
+            })
+        }else if(bank.length == 1){
+            connection.query('UPDATE driver_bank SET bank_name = ?,routing_number = ?,account_number = ? WHERE driver_id = ?',[bank_name,routing_number,account_number,driver_id],function(err,update){
+                if(err){
+                    res.json({
+                        status: false,
+                        message: "Error Occured " + err
+                    })
+                }else{
+                    res.json({
+                        status: true,
+                        message: "Bank Details has been Updated successfully"
+                    })
+                }
+            })
+        }
+    })
+
+
+
+        connection.release();
+    })
+
+
+})
+
+
+
+//View Bank Details
+
+assistanceRoutes.post('/viewbankdetails',function(req,res){
+
+    var driver_id = req.headers['id'];
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+
+    connection.query('SELECT * FROM driver_bank WHERE driver_id = ?',[driver_id],function(err,details){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message: details
+            })
+        }
+    })
+
+
+
+
+        connection.release();
+    })
+
+})
+
+
+
+
+
 
 
 

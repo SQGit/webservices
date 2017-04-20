@@ -4,15 +4,37 @@ var jwt = require('jsonwebtoken');
 var moment = require('moment');
 var multer = require('multer');
 var mime = require('mime');
+var request = require('request');
+var twilio = require('twilio');
 
 var pool = require('../connection');
+
+
+
+//Twilio Configuration
+
+var twilio = require('twilio');
+
+var accountSid = 'AC78e3aefc278a8184d567d7041b97bb20';
+var authToken = 'aa199ed7aa3914d3fe9e3583ad8a6f20';
+
+var client = twilio(accountSid,authToken);
+
+
+
+
+
+
+
+
+
 
 
 //Licence Image
 
 var licencestorage = multer.diskStorage({
     destination: function(req,file,cb){
-        cb(null,"C:/wamp64/www/medikally/assets/img/medical_licence");
+        cb(null,"C:/wamp64/www/medikally/assets/img/medical_licence");  
     },
     filename: function(req,file,cb){
         var datetimestamp = Date.now();
@@ -53,6 +75,7 @@ var userupdateupload = multer({
 module.exports = function(app){
 
 
+
 var medikally = express.Router();
 
 
@@ -62,6 +85,28 @@ var medikally = express.Router();
 
 
 
+
+
+
+
+
+
+// medikally.get('/videos/:name',function(req,res,next){
+//     var options = {
+//         root: 'C:/wamp64/www/medikally/assets/videos/',
+//     };
+
+//     var filename = req.params.name;
+//     res.sendFile(filename,options,function(err){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 message: "Error Occured " + err
+//             })
+//         }
+//         console.log(filename + " has been sent");
+//     });
+// });
 
 
 
@@ -118,19 +163,57 @@ medikally.get('/drug_image/:name',function(req,res,next){
 
 
 
-//Medikally signup
+//Add Version
 
 
-medikally.post('/signup',function(req,res){
 
-    var created = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss');
+medikally.post('/addversion',function(req,res){
 
-    var mobile = req.headers['mobileno'];
-    var password = req.headers['password'];
-    var username = req.headers['username'];
-    var email = req.headers['email'];
-    var licence_number = req.headers['licence_number'];
-    var address = req.headers['address'];
+    version = req.body.version;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+    
+    connection.query('INSERT INTO version SET version = ?',[version],function(err,save){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message : "Version has been added as " + version
+            })
+        }
+    })
+
+
+        connection.release();
+    })
+
+})
+
+
+
+
+
+
+// Update Version
+
+
+medikally.post('/updateversion',function(req,res){
+
+    
+    var oldversion = req.body.oldversion;
+    var newversion = req.body.newversion;
     
 
     pool.getConnection(function(err,connection){
@@ -139,9 +222,278 @@ medikally.post('/signup',function(req,res){
                 status: false,
                 code: 100,
                 message: "Error in connecting Database"
-            });
+            })
         }
 
+
+
+    
+    connection.query('UPDATE version SET version = ? WHERE version = ?',[newversion,oldversion],function(err,old){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message: "Version has been updated successfully to " + newversion
+            })
+        }
+    })
+
+
+        connection.release();
+    })
+
+
+})
+
+
+//Check Version
+
+medikally.post('/checkversion',function(req,res){
+
+    var version = req.body.version;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+
+    connection.query('SELECT * FROM version WHERE version = ?',[version],function(err,verify){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error in connecting Database"
+            })
+        }else if(verify == 0){
+            res.json({
+                status: false
+            })
+        }else{
+            res.json({
+                status: true
+            })
+        }
+    })
+
+
+
+        connection.release();
+    })
+})
+
+
+
+
+
+
+
+// //Medikally signup
+
+
+// medikally.post('/oldsignup',function(req,res){
+
+//     var created = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss a');
+
+//     var mobile = req.headers['mobileno'];
+//     var password = req.headers['password'];
+//     var username = req.headers['username'];
+//     var email = req.headers['email'];
+//     var licence_number = req.headers['licence_number'];
+//     var address = req.headers['address'];
+
+
+//     pool.getConnection(function(err,connection){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 code: 100,
+//                 message: "Error in connecting Database"
+//             });
+//         }
+
+
+//    connection.query('SELECT * FROM users WHERE user_mobile = ?',[mobile],function(err,mobilever){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 message: "Error Occured " + err
+//             })
+//         }else if(mobilever.length == 1){
+//             res.json({
+//                 status: false,
+//                 message: "Mobile Number exists already"
+//             })
+//         }else if(mobilever.length != 1){
+            
+//             connection.query('SELECT * FROM users WHERE user_email = ?',[email],function(err,emailver){
+//                 if(err){
+//                     res.json({
+//                         status: false,
+//                         message: "Error Occured " + err
+//                     })
+//                 }else if(emailver.length == 1){
+//                     res.json({
+//                         status: false,
+//                         message: "Email exists already"
+//                     })
+//                 }else if(emailver.length != 1){
+                   
+
+                                       
+//  licenceupload(req,res,function(err){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 message: "Error Occured " + err
+//             });
+//         }else{
+
+
+                             
+// //
+//                                 if(req.files == undefined){
+// //licenceimage
+//                                     function licenceImage(){
+//                                         return licenceimage = "null" ;
+//                                     }
+//                                     var licenceimage = licenceImage()
+//                                 }else if(req.files.length == 1){
+//                                 function licenceImage(){
+//                                      if(typeof req.files[0].filename !== undefined){
+//                                     return licence = req.files[0].filename
+//                                 }
+//                                 }
+//                                 var licenceimage = licenceImage()
+//                                 }else{
+//                                     console.log("No Licence Image has been attached");
+//                                 }
+
+
+
+
+
+//             var signup = {user_name: username,user_mobile: mobile,user_password: password,user_email: email,created_date: created,licence_number: licence_number,licence_img: licenceimage,verification_status: "false",user_address: address}
+
+
+//             connection.query('INSERT INTO users SET?',signup,function(err,user){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 message: "Error Occured " + err
+//             });
+//         }else if(licence_number === "null"){
+                    
+//                         client.messages.create({
+//                             body : "A New user has been registered in Medikally",
+//                             to : "+919042150232",
+//                             from : '+12014740491'
+//                         },function(err,message){
+//                             if(err){
+                                            
+//                                 res.json({
+//                                     status : false,
+//                                     message : "Error Occured" + err
+//                                 });
+//                             }
+//                                 else{
+//                                         res.json({
+//                                             status : true,
+//                                             sid : message.sid,
+//                                             message: "You have been successfully registered with Medikally"
+
+//                                         });
+
+//                                     }
+                                
+//                         }); 
+
+//         }else{
+
+
+//                           client.messages.create({
+//                             body : "A New user has been registered in Medikally and waiting for Licence Approval",
+//                             to : "+919042150232",
+//                             from : '+12014740491'
+//                         },function(err,message){
+//                             if(err){
+                                            
+//                                 res.json({
+//                                     status : false,
+//                                     message : "Error Occured" + err
+//                                 });
+//                             }
+//                                 else{
+//                                         res.json({
+//                                             status : true,
+//                                             sid : message.sid,
+//                                             message: "You have been successfully registered with Medikally"
+
+//                                         });
+
+//                                     }
+                                
+//                         }); 
+
+
+
+//         }
+//     });
+
+
+//         }
+//     })
+
+//                 }
+//             })
+
+
+//         }
+
+
+//    })
+
+//         connection.release();
+//     })
+
+// })
+
+
+
+
+//New signup 
+
+
+medikally.post('/signup',function(req,res){
+
+    var created = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss a');
+
+    var mobile = req.headers['mobileno'];
+    var password = req.headers['password'];
+    var username = req.headers['username'];
+    var email = req.headers['email'];
+    var licence_number = req.headers['licence_number'];
+    var address = req.headers['address'];
+
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+
+        
 
    connection.query('SELECT * FROM users WHERE user_mobile = ?',[mobile],function(err,mobilever){
         if(err){
@@ -206,17 +558,43 @@ medikally.post('/signup',function(req,res){
             var signup = {user_name: username,user_mobile: mobile,user_password: password,user_email: email,created_date: created,licence_number: licence_number,licence_img: licenceimage,verification_status: "false",user_address: address}
 
 
-            connection.query('INSERT INTO users SET?',signup,function(err,user){
+        connection.query('INSERT INTO users SET?',signup,function(err,user){
         if(err){
             res.json({
                 status: false,
                 message: "Error Occured " + err
             });
         }else{
-            res.json({
-                status: true,
-                message: "You have been successfully registered with Medikally"
-            });
+
+
+
+             var Form = {
+                From: "medNew",
+                To: "+919042150232", 
+                TemplateName: "medikallynew"   // A new user has been Registered with Medikally
+            }
+
+             var url = 'http://2factor.in/API/V1/2bc5bbd5-b23f-11e6-a40f-00163ef91450/ADDON_SERVICES/SEND/TSMS'
+
+             var options = { method: 'POST',
+                url : url,
+             form: Form };
+
+
+            request(options,function(error,response,body){
+                if(error) throw new Error(error);
+                else{
+
+                  res.json({
+                    status: true,
+                    message: "You have been successfully registered with Medikally"
+                })
+
+                 }
+             })
+
+
+
         }
     });
 
@@ -233,10 +611,216 @@ medikally.post('/signup',function(req,res){
 
    })
 
+
+
         connection.release();
     })
 
+
+
+
+
 })
+
+
+
+
+
+// medikally.post('/sms',function(req,res){
+
+//     var mobileno = req.body.mobileno;
+  
+//             var Form = {
+//                 From: "MdOrdr",
+//                 To: "+91"+mobileno,
+//                 TemplateName: "medikallyorderadmin"
+//             }
+
+
+                        
+
+//              var url = 'http://2factor.in/API/V1/2bc5bbd5-b23f-11e6-a40f-00163ef91450/ADDON_SERVICES/SEND/TSMS'
+
+//              var options = { method: 'POST',
+//                 url : url,
+//              form: Form };
+
+//              request(options,function(error,response,body){
+//                  if(error) throw new Error(error);
+//                  else{
+
+//                   res.json({
+//                     status: true,
+//                     message: "You have been successfully registered with Medikally"
+//                 })
+
+//                  }
+//              })
+
+         
+
+           
+// })
+
+
+
+
+//New Otp Generate 
+
+
+medikally.post('/otpgenerate',function(req,res){
+
+    var mobileno = req.body.mobileno;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+    connection.query('SELECT user_mobile,user_name FROM users WHERE user_mobile = ?',[mobileno],function(err,user){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else if(user == 0){
+            res.json({
+                 status: false,
+                message: "You have to register with Medikally first to get an OTP"
+            })
+        }else{
+
+            var username = user[0].user_name;
+            var password = Math.floor(Math.random()*9000)+1000;
+
+            var Form = {
+                From: "medOtp",
+                To: "+91"+mobileno,
+                TemplateName: "medikallyotp",  // Hi #VAR1#,Your one time password for Medikally is #VAR2#
+                VAR1: username,
+                VAR2: password
+            }
+
+            
+             var url = 'http://2factor.in/API/V1/2bc5bbd5-b23f-11e6-a40f-00163ef91450/ADDON_SERVICES/SEND/TSMS'
+
+             var options = { method: 'POST',
+                url : url,
+             form: Form };
+
+
+            request(options,function(error,response,body){
+                 if(error) throw new Error(error);
+                 else{
+
+                        connection.query('UPDATE users SET user_password = ? WHERE user_mobile = ?',[password,mobileno],function(err,save){
+                        if(err){
+                            res.json({
+                                status: false,
+                                message: "Error Occured " + err
+                            })
+                        }else{
+                            res.json({
+                                status: true,
+                                message: "Please enter the OTP you have received"
+                            })
+                        }
+                    })
+
+
+
+                 }
+             })
+
+
+
+        }
+    })
+
+
+
+        connection.release();
+    })
+})
+
+
+
+
+// // OTP Generate
+
+// medikally.post('/oldotpgenerate',function(req,res){
+
+//     var mobileno = req.body.mobileno;
+
+//     pool.getConnection(function(err,connection){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 code: 100,
+//                 message: "Error in connecting Database" 
+//             })
+//         }
+
+//     connection.query('SELECT user_mobile FROM users WHERE user_mobile = ?',[mobileno],function(err,user){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 message: "Error Occured " + err
+//             })
+//         }else if(user == 0){
+//             res.json({
+//                 status: false,
+//                 message: "You have to register with Medikally first to get an OTP"
+//             })
+//         }else{
+
+//              var password = Math.floor(Math.random()*9000)+1000;
+
+//              var url = 'http://2factor.in/API/V1/2bc5bbd5-b23f-11e6-a40f-00163ef91450/SMS/' + '+91' + mobileno + '/' + password +'/medikally'
+
+//              var options = { method: 'GET',
+//                 url : url,
+//              body: '{}' };
+
+//              request(options,function(error,response,body){
+//                  if(error) throw new Error(error);
+//                  else{
+
+//                     connection.query('UPDATE users SET user_password = ? WHERE user_mobile = ?',[password,mobileno],function(err,save){
+//                         if(err){
+//                             res.json({
+//                                 status: false,
+//                                 message: "Error Occured " + err
+//                             })
+//                         }else{
+//                             res.json({
+//                                 status: true,
+//                                 message: "Please enter the OTP you have received"
+//                             })
+//                         }
+//                     })
+
+//                  }
+//              })
+
+
+//         }
+//     })
+
+
+
+
+//         connection.release();
+//     })
+
+
+// })
+
+
 
 
 
@@ -247,6 +831,7 @@ app.use('/medikally',medikally);
 
 var apiRoutes = express.Router();
 
+//Login
 
 apiRoutes.post('/login',function(req,res){
 
@@ -275,7 +860,7 @@ apiRoutes.post('/login',function(req,res){
             if(mobile[0].user_password != password){
                 res.json({
                     status: false,
-                    message: "Authenntication failed.Wrong Password" 
+                    message: "Authentication failed.Wrong Password" 
                 });
             }else{
 
@@ -288,6 +873,7 @@ apiRoutes.post('/login',function(req,res){
                 var licence_img = mobile[0].licence_img;
                 var licence_number = mobile[0].licence_number;
                 var user_image = mobile[0].user_image;
+                var verification_status = mobile[0].verification_status;
 
                 res.json({
                     status: true,
@@ -297,6 +883,7 @@ apiRoutes.post('/login',function(req,res){
                     user_email: user_email,
                     licence_image: licence_img,
                     licence_number: licence_number,
+                    verification_status: verification_status,
                     user_image: user_image,
                     token: token
                 });
@@ -344,7 +931,128 @@ apiRoutes.use(function(req,res,next){
 
 
 
-//Update Licence
+// //Update Licence
+
+
+// apiRoutes.post('/oldupdatelicence',function(req,res){
+
+//     var id = req.headers['id'];
+//     var licence_number = req.headers['licence_number'];
+
+//     pool.getConnection(function(err,connection){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 code: 100,
+//                 message: "Error in connecting Database"
+//             });
+//         }
+
+    
+
+//     licenceupload(req,res,function(err){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 message: "Error Occured " + err
+//             })
+//         }else{
+
+
+//             connection.query('SELECT * FROM users WHERE user_id = ?',[id],function(err,user){
+//                 if(err){
+//                     res.json({
+//                         status: false,
+//                         message: "Error Occured " + err
+//                     })
+//                 }else{
+
+
+//                     var verification_status = user[0].verification_status;
+
+
+// //
+//                                 if(req.files == undefined){
+// //licenceimage
+//                                     function licenceImage(){
+//                                         return licenceimage = user[0].licence_image ;
+//                                     }
+//                                     var licenceimage = licenceImage()
+//                                 }else if(req.files.length == 1){
+//                                 function licenceImage(){
+//                                      if(typeof req.files[0].filename !== undefined){
+//                                     return licence = req.files[0].filename
+//                                 }
+//                                 }
+//                                 var licenceimage = licenceImage()
+//                                 }else{
+//                                     console.log("No Licence Image has been attached");
+//                                 }
+
+
+
+                
+//             connection.query('UPDATE users SET licence_number = ?,licence_img = ? WHERE user_id = ?',[licence_number,licenceimage,id],function(err,save){
+//                 if(err){
+//                     res.json({
+//                         status: false,
+//                         message: "Error Occured " + err
+//                     })
+//                 }else{
+
+
+//                         client.messages.create({
+//                             body : "An User has updated his Licence and waiting for Approval",
+//                             to : "+919042150232",
+//                             from : '+12014740491'
+//                         },function(err,message){
+//                             if(err){
+                                            
+//                                 res.json({
+//                                     status : false,
+//                                     message : "Error Occured" + err
+//                                 });
+//                             }
+//                                 else{
+//                                            res.json({
+//                                                 status: true,
+//                                                 licence_number: licence_number,
+//                                                 licence_image: licenceimage,
+//                                                 verification_status: verification_status
+//                                             });
+
+//                                     }
+                                
+//                         }); 
+
+
+                 
+//                 }
+//             })
+
+
+//                 }
+//             })
+
+
+//         }
+
+
+//     })
+
+
+
+//     connection.release();
+
+//     })
+
+// })
+
+
+
+
+
+//NEW Update Licence 
 
 
 apiRoutes.post('/updatelicence',function(req,res){
@@ -405,19 +1113,49 @@ apiRoutes.post('/updatelicence',function(req,res){
 
 
                 
-            connection.query('UPDATE users SET licence_number = ?,licence_img = ?',[licence_number,licenceimage],function(err,save){
+            connection.query('UPDATE users SET licence_number = ?,licence_img = ? WHERE user_id = ?',[licence_number,licenceimage,id],function(err,save){
                 if(err){
                     res.json({
                         status: false,
                         message: "Error Occured " + err
                     })
                 }else{
+
+
+
+
+            var Form = {
+                From: "medLic",
+                To: "+919042150232",
+                TemplateName: "medikallylicence" //An User has uploaded his Licence Details. Please verify!
+            }
+
+
+            
+                   
+             var url = 'http://2factor.in/API/V1/2bc5bbd5-b23f-11e6-a40f-00163ef91450/ADDON_SERVICES/SEND/TSMS'
+
+             var options = { method: 'POST',
+                url : url,
+             form: Form };
+
+
+            request(options,function(error,response,body){
+                 if(error) throw new Error(error);
+                 else{
+                                    
                     res.json({
-                        status: true,
-                        licence_number: licence_number,
-                        licence_image: licenceimage,
-                        verification_status: verification_status
+                            status: true,
+                            licence_number: licence_number,
+                            licence_image: licenceimage,
+                            verification_status: verification_status
                     });
+
+                 }
+             })
+
+
+                 
                 }
             })
 
@@ -432,7 +1170,6 @@ apiRoutes.post('/updatelicence',function(req,res){
     })
 
 
-
     connection.release();
 
     })
@@ -440,6 +1177,43 @@ apiRoutes.post('/updatelicence',function(req,res){
 })
 
 
+
+
+
+//Videos 
+
+apiRoutes.post('/videos',function(req,res){
+    
+    var id = req.headers['id'];
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }
+
+
+    connection.query('SELECT * FROM videos',function(err,videos){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message: videos
+            })
+        }
+    })
+
+
+
+        connection.release();
+    })
+})
 
 //Drug type
 
@@ -500,6 +1274,85 @@ apiRoutes.post('/drugtype',function(req,res){
 })
 
 
+// Drug Info 
+
+apiRoutes.post('/druginfo',function(req,res){
+
+    var id = req.headers['id'];
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error Occured " + err
+            })
+        }
+
+
+    connection.query('SELECT drug_id,drug_name,drug_type,drug_image FROM drugs',function(err,drugs){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message: drugs
+            })
+        }
+    })
+
+
+        connection.release();
+    })
+
+})
+
+
+//Drug Info Detail
+
+
+apiRoutes.post('/detaildruginfo',function(req,res){
+
+    var id = req.headers['id'];
+
+    var drug_id = req.body.drug_id;
+
+    pool.getConnection(function(err,connection){
+        if(err){
+            res.json({
+                status: false,
+                code: 100,
+                message: "Error in connecting Database"
+            })
+        }
+
+
+
+    connection.query('SELECT drug_id,drug_name,drug_info,drug_type,drug_image FROM drugs WHERE drug_id = ?',[drug_id],function(err,drugs){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            })
+        }else{
+            res.json({
+                status: true,
+                message: drugs
+            })
+        }
+    });
+
+
+
+        connection.release();
+    })
+
+})
+
+
 
 //Licence Status Check
 
@@ -540,7 +1393,10 @@ apiRoutes.post('/licenceverify',function(req,res){
 
 
 
-//place order
+
+
+
+// NEW place order
 
 
 apiRoutes.post('/placeorder',function(req,res){
@@ -586,6 +1442,15 @@ apiRoutes.post('/placeorder',function(req,res){
     all();
 
 
+    //format
+    // {"drug":[
+    //     {"name":"9Gen","strips":30,"price":1800.145},
+    //     {"name":"Mylin","strips":2,"price":135.05}],
+    //     "total":{"price":"1935.20"}
+    // }
+
+
+
 
     pool.getConnection(function(err,connection){
         if(err){
@@ -615,12 +1480,87 @@ apiRoutes.post('/placeorder',function(req,res){
                         message: "Error Occured " + err
                     })
                 }else{
-                    res.json({
-                        status: true,
-                        order_id: order_id,
-                        total: Total[0],
-                        message: "Your post has been added successfully"
-                    })
+
+
+
+                    connection.query('SELECT user_name,user_mobile FROM users WHERE user_id = ?',[rep_id],function(err,user){
+                        if(err){
+                            res.json({
+                                status: false,
+                                message: "Error Occured " + err
+                            })
+                        }else{
+
+
+                            var username = user[0].user_name ;
+                            var mobile = user[0].user_mobile ;
+                                
+                    
+            var Form = {
+                From: "MdOrdr",
+                To: "+919042150232",
+                TemplateName: "medikallyorderadmin"  //A New Order has been placed in Medikally 
+            }
+
+          
+             var url = 'http://2factor.in/API/V1/2bc5bbd5-b23f-11e6-a40f-00163ef91450/ADDON_SERVICES/SEND/TSMS'
+
+             var options = { method: 'POST',
+                url : url,
+             form: Form };
+
+
+            request(options,function(error,response,body){
+            if(error) throw new Error(error);
+            else{
+
+
+            var Form2 = {
+                From: "MedOrd",
+                To: mobile,
+                TemplateName: "medikallyorder", //Hi #VAR1#,Your order has been placed successfully
+                VAR1: username
+            }
+
+          
+             var url2 = 'http://2factor.in/API/V1/2bc5bbd5-b23f-11e6-a40f-00163ef91450/ADDON_SERVICES/SEND/TSMS'
+
+             var options = { method: 'POST',
+                url : url2,
+             form: Form2 };
+
+
+              request(options,function(error,response,body){
+                 if(error) throw new Error(error);
+                 else{
+
+                                   res.json({
+                                            status : true,
+                                            order_id: order_id,
+                                            total: Total[0],
+                                            message: "Your post has been added successfully"
+                                        });
+
+
+
+                             }
+                     })         // Second Request
+
+                            
+                 }
+             })     //First Request
+
+
+
+
+                        }
+                    });  //finish
+
+
+
+
+
+                    
                 }
             })
 
@@ -635,6 +1575,142 @@ apiRoutes.post('/placeorder',function(req,res){
     })
 
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// //place order
+
+
+// apiRoutes.post('/oldplaceorder',function(req,res){
+    
+//     var rep_id = req.headers['id'];
+
+//     var created = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss');
+
+//     var obj = req.body
+//     var key = Object.keys(obj);
+  
+
+//     var Drug = [];
+//     var Total = [];
+    
+//     var order_id1 = [];
+
+
+//     var drug = obj[key[0]];
+//     var total = obj[key[1]];
+
+
+//     function all(){
+
+//         function dru(){
+//             for(var i=0;i<drug.length;i++){
+//                 Drug.push([order_id1,drug[i].name,drug[i].strips,drug[i].price]);
+//             }
+//         }
+
+//         dru();
+
+
+//         function tot(){               
+//                 Total.push(total.price)              
+//         }
+
+//         tot();
+
+//     }
+
+ 
+//     all();
+
+
+
+//     pool.getConnection(function(err,connection){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 code: 100,
+//                 message: "Error in connecting Database"
+//             });
+//         }
+
+
+//     connection.query('INSERT INTO orders SET rep_id = ?,order_date = ?,total_amt = ?,order_status = ?',[rep_id,created,Total[0],"Order Placed"],function(err,order){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 message: "Error Occured " + err
+//             })
+//         }else{
+
+//            var order_id = order.insertId;
+//            order_id1.push(order_id);
+
+//             connection.query('INSERT INTO order_details (order_id,drug_name,strips_count,amt) VALUES ?',[Drug],function(err,details){
+//                 if(err){
+//                     res.json({
+//                         status: false,
+//                         message: "Error Occured " + err
+//                     })
+//                 }else{
+
+
+//                          client.messages.create({
+//                             body : "A New Order has been placed",
+//                             to : "+919042150232",
+//                             from : '+12014740491'
+//                         },function(err,message){
+//                             if(err){
+                                            
+//                                 res.json({
+//                                     status : false,
+//                                     message : "Error Occured" + err
+//                                 });
+//                             }
+//                                 else{
+//                                         res.json({
+//                                             status : true,
+//                                             sid : message.sid,
+//                                             order_id: order_id,
+//                                             total: Total[0],
+//                                             message: "Your post has been added successfully"
+
+//                                         });
+
+//                                     }
+                                
+//                         }); 
+
+                    
+//                 }
+//             })
+
+
+
+//         }
+//     })
+
+
+
+//         connection.release();
+//     })
+
+// })
 
 
 
@@ -852,10 +1928,10 @@ apiRoutes.post('/profileupdate',function(req,res){
 
     var id = req.headers['id'];
 
-    var username = req.headers['user_name'];
-    var usermobile = req.headers['user_mobile'];
-    var useremail = req.headers['user_email'];
-    var useraddress = req.headers['user_address'];
+    var user_name = req.headers['user_name'];
+    var user_mobile = req.headers['user_mobile'];
+    var user_email = req.headers['user_email'];
+    var user_address = req.headers['user_address'];
 
 
 
@@ -907,7 +1983,7 @@ apiRoutes.post('/profileupdate',function(req,res){
                                 }
 
 
-            connection.query('UPDATE users SET user_name = ?,user_mobile,user_email,user_address=?,user_image = ? WHERE user_id = ?',[username,usermobile,useremail,useraddress,userimage,id],function(err,save){
+            connection.query('UPDATE users SET user_name = ?,user_mobile = ?,user_email = ?,user_address = ?,user_image = ? WHERE user_id = ?',[user_name,user_mobile,user_email,user_address,userimage,id],function(err,save){
                 if(err){
                     res.json({
                         status: false,
@@ -917,10 +1993,10 @@ apiRoutes.post('/profileupdate',function(req,res){
                     res.json({
                         status: true,
                         message: "Your profile has been updated successfully",
-                        username: username,
-                        usermobile: usermobile,
-                        useremail: useremail,
-                        useraddress: useraddress,
+                        username: user_name,
+                        usermobile: user_mobile,
+                        useremail: user_email,
+                        useraddress: user_address,
                         userimage: userimage
                     })
                 }
