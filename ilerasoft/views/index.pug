@@ -1,0 +1,180 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title ::Vagans Traffix::
+    style(type='text/css').
+      body
+      {
+      font-family:Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+      font-size:15px;
+      font-weight:normal;
+      color:#333;
+      line-height:25px;
+      }
+      .text-dark
+      {
+      color:#333;
+      }
+      .text-white
+      {
+      color:#fff;
+      }
+      .pad
+      {
+      padding:3px 5px;
+      }
+      .bredr
+      {
+      border:1px solid #333;
+      }
+      .bredr-bttm
+      {
+      border-bottom:2px solid #ccc;
+      }
+      h1
+      {
+      font-weight:normal;
+      }
+  body
+    - var client = client1
+    - var attention = attention1
+    - var address = address1
+    - var fileno = fielno1
+    - var matter = matter1
+    - var phone = phone1
+    - var email = email1
+    table.bredr(width='1050', border='0', align='center', cellpadding='5', cellspacing='5')
+      tbody
+        tr
+          td
+            table(width='1000', border='0', align='center', cellpadding='0', cellspacing='0')
+              tbody
+                tr
+                  td(width='100%', height='55', align='center', valign='middle')
+                    img(src='header.png', width='974', height='66')
+                tr
+                  td.bredr-bttm(height='55', align='center', valign='middle')
+                    h1 Consent to Transfer
+                tr
+                  td(align='right', valign='middle')
+                    strong From the Office of
+                tr
+                  td(align='right', valign='middle')
+                    img(width='275', height='110', src='index.jpg')
+                tr
+                  td(align='center', valign='middle')
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='2', cellpadding='2')
+                      tbody
+                        tr
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Client
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Attention
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Address
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Matter File No
+                          td(align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Matter
+                        tr
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield1(type='text', name='textfield', placeholder='Client', style='border:1px solid #ccc; padding:5px;',value=client)
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield2(type='text', name='textfield', placeholder='Attention', style='border:1px solid #ccc; padding:5px;',value=attention)
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield3(type='text', name='textfield', placeholder='Address', style='border:1px solid #ccc; padding:5px;',value = address)
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield4(type='text', name='textfield', placeholder='Matter File No', style='border:1px solid #ccc; padding:5px;',value = fileno)
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield5(type='text', name='textfield', placeholder='Matter', style='border:1px solid #ccc; padding:5px;',value = matter)
+                tr
+                  td
+                    table(width='450', border='0', cellspacing='2', cellpadding='2')
+                      tbody
+                        tr
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4',value = phone)
+                            strong
+                              span.pad Phone
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4',value = email)
+                            strong
+                              span.pad Email
+                        tr
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield7(type='text', name='textfield4', placeholder='Phone', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield12(type='text', name='textfield4', placeholder='Email ID', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td &nbsp;
+                tr
+                  td
+                    table(width='1000', border='0', align='left', cellpadding='3', cellspacing='3')
+                      tbody
+                        tr
+                          td
+                            | I here by authorize 
+                            input#textfield8(type='text', name='textfield2', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                            |  to provide me a legal services provider within the meaning of the Access to Justice Act, and further I fully confirm and authorize to transfer my file, in accordance with the rules set out in the Rules of Conduct for 
+                            input#textfield6(type='text', name='textfield3', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                            |  to any licensed legal services provider, 
+                            input#textfield11(type='text', name='textfield5', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                        tr
+                          td
+                            | I 
+                            input#textfield34(type='text', name='textfield2', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                            |  Case# (S) 
+                            input#textfield13(type='text', name='textfield6', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                        tr
+                          td
+                            p
+                              | Authorize Vagans Legal Services and their agents to act on my behalf or to transfer my file to any colleague, who in their opinion may assist me in my matter. I fully authorize my legal service provider to take any and all actions they deem necessary to assist me in this matter.
+                              br
+                              |  I understand the charge (s) against me and the possible penalties which may be imposed if I am convicted of this charge (s) or any reduced charge (s). If my instructions include a guilty plea, I understand that I am waiving my right to a trial, and that the prosecution is no longer required to prove the elements of the offence, and that I am doing so of my own free will.
+                              br
+                              |  I instruct my legal service provider to withdraw the charge (s) if all the elements of the charge (s) cannot be proven by the Crown. Alternatively, I am allowing my representative to act in my best interest as they see fit. This does include the possibility of a guilty plea to a lesser offence or the charge as laid.
+                              br
+                              |  I have chosen not to appear in court and I understand that by not attending my hearing, I may compromise my chance of a successful outcome and do not hold my legal representative responsible.
+                              br
+                              |  I understand that it is my responsibility to provide Vagans Legal Services and their agents with any and all relevant information including the 
+                              strong TRIAL DATE
+                              | , acknowledging that Vagans Legal Services will not receive the trial date from the court.
+                              br
+                              |  I understand that the fee quoted is a block fee and that fee must be paid 
+                              strong in full
+                              |  before any legal actions can be performed on my file. Partial payments will not be accepted. If during this process it becomes apparent that transcripts, motions, witness summons, etc. May be required, or an unforeseen issue arises, that additional charges may apply. I agree to pay these reasonable costs immediately when then they are due.
+                              br
+                              |  I understand that the court will notify me of any outcome resulting in a conviction, and I understand that Vagans Legal Services and their agents are not responsible for such correspondence. As such, I will provide the court with any change in my address.
+                    |  .
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='3', cellpadding='3')
+                      tbody
+                        tr
+                          td(width='419', height='45', align='left', valign='middle', bgcolor='#F3F3F3')
+                            span.pad Signature of the Defendent
+                          td(width='574', height='45', bgcolor='#F3F3F3')
+                            input#textfield9(type='text', name='textfield2', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                        tr
+                          td(height='45', align='left', valign='middle', bgcolor='#F3F3F3') Date
+                          td(height='45', bgcolor='#F3F3F3')
+                            input#textfield10(type='text', name='textfield2', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td &nbsp;
+                tr
+                  td(align='center', valign='middle') --End of Consent to Transfer--
+                tr
+                  td(align='center', valign='middle') &nbsp;

@@ -5,6 +5,7 @@ let mongoose = require('mongoose');
 let morgan = require('morgan');
 let cors = require('cors');
 let bodyParser = require('body-parser');
+let pug = require('pug');
 
 let port = 3025;
 
@@ -28,7 +29,11 @@ db.on('error',console.error.bind(console,'connection error:'));
 
 app.use(cors());
 app.set('superSecret',config.secret);
+
+app.set('view engine','pug');
+
 app.use(express.static('public'));
+app.use('/opiniion',express.static('public'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
@@ -37,8 +42,8 @@ app.use(bodyParser.json({type: 'application/json'}));
 
 app.use(morgan('dev'));
 
-
 require('./app/routes/admin')(app);
+require('./app/routes/mandrill')(app);
 
 app.listen(port);
 console.log("Listening on port " + port);

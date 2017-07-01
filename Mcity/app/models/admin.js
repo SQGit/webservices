@@ -2,6 +2,12 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 
+var shoppingItems = new Schema({
+    item_name: String,
+    item_price: String,
+    status: String
+})
+
 module.exports = mongoose.model('Admin',new Schema({
     shop_category: String,
     shop_sub_type: String,
@@ -22,5 +28,6 @@ module.exports = mongoose.model('Admin',new Schema({
     time_mon_sat_from: String,
     shop_logo: String,
     demo_shop_id: String,
-    images: Array
+    images: Array,
+    shopping_items: [shoppingItems]
 }))

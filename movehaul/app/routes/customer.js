@@ -89,46 +89,6 @@ module.exports = function(app){
 
 
 
-app.post('/driverslist',function(req,res){
-
-    var customer_id = req.headers['id'];
-
-    var booking_id = req.body.booking_id ;
-
-    pool.getConnection(function(err,connection){
-        if(err){
-            res.json({
-                code : 100,
-                message : "Error in connecting Database"
-            })
-        }
-
-    
-    connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,truck.truck_id,truck.truck_type,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side,truck.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN truck ON job_bidding.driver_id = truck.driver_id WHERE job_bidding.booking_id = ?',[booking_id],function(err,job){
-        if(err) throw err ;
-
-        if(job == 0){
-            res.json({
-                status : false,
-                message : "No job listed here"
-            })
-        }else if(job != 0){
-            res.json({
-                status : true,
-                message : job
-            })
-        } 
-    });
-
-        connection.release();
-    })
-});
-
-
-
-
-
-
 
 
 
@@ -1165,7 +1125,14 @@ apiRoutes.post('/vehicletype',function(req,res){
 })
 
 
-// Customer Booking for Job
+
+
+
+
+
+
+
+// Customer Booking for Job - With Notification
 
 apiRoutes.post('/booking',function(req,res){
 
@@ -1183,6 +1150,8 @@ apiRoutes.post('/booking',function(req,res){
     var description = req.headers['description'] || req.body.description ;
     var booking_time = req.headers['booking_time'] || req.body.booking_time ;
     var delivery_address = req.headers['delivery_address'] || req.body.delivery_address ;
+
+    var radius = req.body.radius;
   
 
     pool.getConnection(function(err,connection){
@@ -1350,11 +1319,95 @@ apiRoutes.post('/booking',function(req,res){
                         message : "Error Occured" + err
                     })
                 }else{
+
+                    let booking_id = book.insertId;
+
+                    let latitude = pickup_latitude;
+
+                    let longitude = pickup_longitude;
+
+
+
+                     connection.query('SELECT driver_location.driver_id,driver_location.driver_latitude,driver_location.driver_longitude,driver.driver_id,driver.fcm_id,driver.driver_status, ( 3959 * acos( cos( radians(' + latitude + ') ) * cos( radians( driver_latitude ) ) * cos( radians( driver_longitude ) - radians(' + longitude + ') ) + sin( radians(' + latitude + ') ) * sin( radians( driver_latitude ) ) ) ) AS distance FROM driver_location INNER JOIN driver ON driver_location.driver_id = driver.driver_id WHERE driver.driver_status = ? HAVING distance <' + radius + ' ORDER BY distance LIMIT 0 ,20',["active"],function(err,location){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err
+            });
+        }else{
+
+
+                var message = {
+                            title: "New Job",
+                            body: "A New job is waiting for bidding",
+                            // customer_name : customer_name
+                    }
+
+
+
+
+             function sendMessage(deviceid,message,success){
+
+                        request({
+                            url: 'https://fcm.googleapis.com/fcm/send',
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'key='+serverkey
+                            },
+                            body: JSON.stringify({
+                                notification: {
+                                    body: message
+                                },
+                                to: deviceid
+                            })
+                        },function(err,response,body){
+                            if(err){
+                                res.json({
+                                    status: false,
+                                    message: "Error Occured" + err
+                                });
+                            }else if(response.statusCode >= 400){
+                                // res.json({
+                                //     Error: response.statusCode + '-' +response.statusMessage + '\n' + response.body
+                                // });
+
+                                console.log(response.statusMessage)
+                            }else{
+                               console.log("done")
+                            }
+                        })
+
+                    }
+
+            for(i in location){
+                sendMessage((location[i].fcm_id),message);
+            }
+
+
+                     
+
                     res.json({
                         status : true,
                         message : "Your Post has been added successfully",
-                        booking_id : book.insertId
+                        booking_id : booking_id
                     });
+
+        }
+    })
+
+
+
+
+
+
+
+
+
+                   
+
+
+
                 }
         });
 
@@ -1364,6 +1417,211 @@ apiRoutes.post('/booking',function(req,res){
             connection.release();
     })
 })
+
+
+
+
+
+
+// // Customer Booking for Job - OLD Without Notification
+
+// apiRoutes.post('/booking',function(req,res){
+
+//     var customer_id = req.headers['id'];
+//     var pickup_location = req.headers['pickup_location'] || req.body.pickup_location ;
+//     var pickup_latitude = req.headers['pickup_latitude'] || req.body.pickup_latitude ;
+//     var pickup_longitude = req.headers['pickup_longitude'] || req.body.pickup_longitude ;
+//     var drop_location = req.headers['drop_location'] || req.body.drop_location ;
+//     var drop_latitude = req.headers['drop_latitude'] || req.body.drop_latitude ;
+//     var drop_longitude = req.headers['drop_longitude'] || req.body.drop_longitude ;
+//     var goods_type = req.headers['goods_type'] || req.body.goods_type ;
+//     var vehicle_type = req.headers['vehicle_type'] || req.body.vehicle_type;
+//     var vehicle_main_type = req.headers['vehicle_main_type'] || req.body.vehicle_main_type;
+//     var vehicle_sub_type = req.headers['vehicle_sub_type'] || req.body.vehicle_sub_type ;                             //Previously truck_type
+//     var description = req.headers['description'] || req.body.description ;
+//     var booking_time = req.headers['booking_time'] || req.body.booking_time ;
+//     var delivery_address = req.headers['delivery_address'] || req.body.delivery_address ;
+  
+
+//     pool.getConnection(function(err,connection){
+//         if(err) throw err ;
+
+
+//     bookinggoodsupload(req,res,function(err){
+//         if(err){
+//             res.json({
+//                 status : false,
+//                 message : "Error Occured" + err
+//             });
+//         }else{
+
+                                         
+// //bookinggoods 
+//                                 if(req.files == undefined){
+//                                     function bookingGoods1(){
+//                                         return bookinggoods1 = "null" ;
+//                                     }
+//                                     function bookingGoods2(){
+//                                         return bookinggoods2 = "null" ;
+//                                     }
+//                                     function bookingGoods3(){
+//                                         return bookinggoods3 = "null";
+//                                     }
+//                                     function bookingGoods4(){
+//                                         return bookinggoods4 = "null";
+//                                     }
+//                                     function bookingGoods5(){
+//                                         return bookinggoods5 = "null";
+//                                     }
+//                                         var bookinggoods1 = bookingGoods1()
+//                                         var bookinggoods2 = bookingGoods2()
+//                                         var bookinggoods3 = bookingGoods3()
+//                                         var bookinggoods4 = bookingGoods4()
+//                                         var bookinggoods5 = bookingGoods5()
+//                                 }else if(req.files.length == 1){
+// //bookinggoods1  
+//                                         function bookingGoods1(){
+//                                         if(typeof req.files[0].filename !== undefined){
+//                                         return bookinggoods1 = req.files[0].filename
+//                                         }
+//                                         }
+//                                 var bookinggoods1 = bookingGoods1()
+//                                 }else if(req.files.length == 2){
+// //bookinggoods2
+//                                         function bookingGoods1(){
+//                                         if(typeof req.files[0].filename !== undefined){
+//                                         return bookinggoods1 = req.files[0].filename
+//                                         }
+//                                         }
+// //bookinggoods2 
+//                                         function bookingGoods2(){      
+//                                         if(typeof req.files[1].filename !== undefined){
+//                                         return bookinggoods2 = req.files[1].filename
+//                                         }
+//                                         }
+//                                         var bookinggoods1 = bookingGoods1()
+//                                         var bookinggoods2 = bookingGoods2()
+//                                 }else if(req.files.length == 3){
+
+//                                          function bookingGoods1(){
+//                                         if(typeof req.files[0].filename !== undefined){
+//                                         return bookinggoods1 = req.files[0].filename
+//                                         }
+//                                         }
+// //bookinggoods2 
+//                                         function bookingGoods2(){      
+//                                         if(typeof req.files[1].filename !== undefined){
+//                                         return bookinggoods2 = req.files[1].filename
+//                                         }
+//                                         }
+                                        
+//                                         function bookingGoods3(){      
+//                                         if(typeof req.files[2].filename !== undefined){
+//                                         return bookinggoods3 = req.files[2].filename
+//                                         }
+//                                         }
+
+//                                         var bookinggoods1 = bookingGoods1()
+//                                         var bookinggoods2 = bookingGoods2()
+//                                         var bookinggoods3 = bookingGoods3()
+
+//                                     }else if(req.files.length == 4){
+
+
+//                                         function bookingGoods1(){
+//                                         if(typeof req.files[0].filename !== undefined){
+//                                         return bookinggoods1 = req.files[0].filename
+//                                         }
+//                                         }
+// //bookinggoods2 
+//                                         function bookingGoods2(){      
+//                                         if(typeof req.files[1].filename !== undefined){
+//                                         return bookinggoods2 = req.files[1].filename
+//                                         }
+//                                         }
+                                        
+//                                         function bookingGoods3(){      
+//                                         if(typeof req.files[2].filename !== undefined){
+//                                         return bookinggoods3 = req.files[2].filename
+//                                         }
+//                                         }
+                                    
+//                                         function bookingGoods4(){
+//                                         if(typeof req.files[3].filename !== undefined){
+//                                         return bookinggoods4 = req.files[3].filename
+//                                         }
+//                                         }
+
+//                                         var bookinggoods1 = bookingGoods1()
+//                                         var bookinggoods2 = bookingGoods2()
+//                                         var bookinggoods3 = bookingGoods3()
+//                                         var bookinggoods4 = bookingGoods4()
+//                                     }else if(req.files.length == 5){
+
+//                                         function bookingGoods1(){
+//                                         if(typeof req.files[0].filename !== undefined){
+//                                         return bookinggoods1 = req.files[0].filename
+//                                         }
+//                                         }
+// //bookinggoods2 
+//                                         function bookingGoods2(){      
+//                                         if(typeof req.files[1].filename !== undefined){
+//                                         return bookinggoods2 = req.files[1].filename
+//                                         }
+//                                         }
+                                        
+//                                         function bookingGoods3(){      
+//                                         if(typeof req.files[2].filename !== undefined){
+//                                         return bookinggoods3 = req.files[2].filename
+//                                         }
+//                                         }
+                                    
+//                                         function bookingGoods4(){
+//                                         if(typeof req.files[3].filename !== undefined){
+//                                         return bookinggoods4 = req.files[3].filename
+//                                         }
+//                                         }
+                                    
+//                                         function bookingGoods5(){
+//                                         if(typeof req.files[4].filename !== undefined){
+//                                         return bookinggoods5 = req.files[4].filename
+//                                         }
+//                                         }
+
+//                                         var bookinggoods1 = bookingGoods1()
+//                                         var bookinggoods2 = bookingGoods2()
+//                                         var bookinggoods3 = bookingGoods3()
+//                                         var bookinggoods4 = bookingGoods4()
+//                                         var bookinggoods5 = bookingGoods5()
+//                                         }else{
+//                                     console.log("No Goods Image has been attached");
+//                                 }
+
+
+
+//             connection.query('INSERT INTO bookings SET customer_id = ?,pickup_location = ?,pickup_latitude = ?,pickup_longitude = ?,drop_location = ?,drop_latitude = ?,drop_longitude = ?,delivery_address = ?, goods_type = ?,vehicle_type = ?,vehicle_main_type = ?,vehicle_sub_type = ?,description = ?,booking_time = ?,radius = ?,job_status = ?,goods_image1 = ?,goods_image2 = ?,goods_image3 = ?,goods_image4 = ?,goods_image5 = ?',[customer_id,pickup_location,pickup_latitude,pickup_longitude,drop_location,drop_latitude,drop_longitude,delivery_address,goods_type,vehicle_type,vehicle_main_type,vehicle_sub_type,description,booking_time,"ten","waiting",bookinggoods1,bookinggoods2,bookinggoods3,bookinggoods4,bookinggoods5],function(err,book){
+
+
+//                 if(err){
+//                     res.json({
+//                         status :false,
+//                         message : "Error Occured" + err
+//                     })
+//                 }else{
+//                     res.json({
+//                         status : true,
+//                         message : "Your Post has been added successfully",
+//                         booking_id : book.insertId
+//                     });
+//                 }
+//         });
+
+//         }
+//     })
+
+//             connection.release();
+//     })
+// })
 
 
 
@@ -1596,7 +1854,7 @@ apiRoutes.post('/driverslist',function(req,res){
         }
 
     
-    connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,truck.truck_id,truck.truck_type,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side,truck.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN truck ON job_bidding.driver_id = truck.driver_id WHERE job_bidding.booking_id = ?',[booking_id],function(err,job){
+    connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,driver.finished_jobs,truck.truck_id,truck.truck_type,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side,truck.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN truck ON job_bidding.driver_id = truck.driver_id WHERE job_bidding.booking_id = ? ORDER BY job_bidding.booking_id DESC',[booking_id],function(err,job){
         if(err) throw err ;
 
         if(job == 0){
@@ -1634,7 +1892,7 @@ apiRoutes.post('/driverslistbus',function(req,res){
         }
 
     
-    connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,bus.bus_id,bus.bus_type,bus.bus_image_front,bus.bus_image_back,bus.bus_image_side,bus.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN bus ON job_bidding.driver_id = bus.driver_id WHERE job_bidding.booking_id = ?',[booking_id],function(err,job){
+    connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,driver.finished_jobs,bus.bus_id,bus.bus_type,bus.bus_image_front,bus.bus_image_back,bus.bus_image_side,bus.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN bus ON job_bidding.driver_id = bus.driver_id WHERE job_bidding.booking_id = ? ORDER BY job_bidding.booking_id DESC',[booking_id],function(err,job){
         if(err) throw err ;
 
         if(job == 0){
@@ -1720,6 +1978,8 @@ apiRoutes.post('/payment',function(req,res){
     var bidding_id = req.body.bidding_id ;
     var transaction_id = req.body.transaction_id ;
     var booking_id = req.body.booking_id ;
+    var receiver_name = req.body.receiver_name;
+    var receiver_phone = req.body.receiver_phone;
     
     var confirmed_time = moment().add(5.5,'hours').format('YYYY/MM/DD T h:mm:ss a') ;
 
@@ -1741,7 +2001,7 @@ apiRoutes.post('/payment',function(req,res){
         }else{
             var job_cost = bidding[0].bidding_cost;
 
-    connection.query('UPDATE bookings SET driver_id = ?,bidding_id = ?,transaction_id = ?,job_cost = ?,job_status = ?,confirmed_time = ? WHERE booking_id = ?',[driver_id,bidding_id,transaction_id,job_cost,"confirmed",confirmed_time,booking_id],function(err,payment){
+    connection.query('UPDATE bookings SET driver_id = ?,bidding_id = ?,transaction_id = ?,job_cost = ?,job_status = ?,confirmed_time = ?,receiver_name = ?,receiver_phone = ? WHERE booking_id = ?',[driver_id,bidding_id,transaction_id,job_cost,"confirmed",confirmed_time,receiver_name,receiver_phone,booking_id],function(err,payment){
         if(err){
             res.json({
                 status: false,
@@ -2002,7 +2262,7 @@ apiRoutes.post('/jobhistory',function(req,res){
         }
 
 
-    connection.query('SELECT bookings.*,driver.driver_id,driver.driver_name,driver.driver_mobile_pri,driver.driver_mobile_sec,driver.driver_image FROM bookings INNER JOIN driver ON bookings.driver_id = driver.driver_id WHERE customer_id = ?',[customer_id],function(err,info){
+    connection.query('SELECT bookings.*,driver_location.*,driver.driver_id,driver.driver_name,driver.driver_mobile_pri,driver.driver_mobile_sec,driver.driver_image FROM bookings INNER JOIN driver ON bookings.driver_id = driver.driver_id INNER JOIN driver_location ON driver_location.driver_id = driver.driver_id WHERE customer_id = ? ORDER BY bookings.booking_id DESC',[customer_id],function(err,info){
         if(err){
             res.json({
                 status: false,
@@ -2260,6 +2520,147 @@ apiRoutes.post('/canceljob',function(req,res){
     })
 
 })
+
+
+
+// // Nearby Drivers
+
+
+// app.post('/nearbydriversnotify',function(req,res){
+
+//     var customer_id = req.headers['id'];
+
+//     var latitude = req.body.latitude;
+//     var longitude = req.body.longitude;
+//     var radius = req.body.radius;
+
+//     pool.getConnection(function(err,connection){
+//         if(err){
+//             res.json({
+//                 code: 100,
+//                 message: "Error in connecting database"
+//             })
+//         }
+
+    
+//     connection.query('SELECT driver_location.driver_id,driver_location.driver_latitude,driver_location.driver_longitude,driver.driver_id,driver.fcm_id,driver.driver_status, ( 3959 * acos( cos( radians(' + latitude + ') ) * cos( radians( driver_latitude ) ) * cos( radians( driver_longitude ) - radians(' + longitude + ') ) + sin( radians(' + latitude + ') ) * sin( radians( driver_latitude ) ) ) ) AS distance FROM driver_location INNER JOIN driver ON driver_location.driver_id = driver.driver_id WHERE driver.driver_status = ? HAVING distance <' + radius + ' ORDER BY distance LIMIT 0 ,20',["active"],function(err,location){
+//         if(err){
+//             res.json({
+//                 status: false,
+//                 message: "Error Occured " + err
+//             });
+//         }else{
+
+
+//                 var message = {
+//                             title: "New Job",
+//                             body: "A New job is waiting for bidding",
+//                             // customer_name : customer_name
+//                     }
+
+
+
+
+//              function sendMessage(deviceid,message,success){
+
+//                         request({
+//                             url: 'https://fcm.googleapis.com/fcm/send',
+//                             method: 'POST',
+//                             headers: {
+//                                 'Content-Type': 'application/json',
+//                                 'Authorization': 'key='+serverkey
+//                             },
+//                             body: JSON.stringify({
+//                                 notification: {
+//                                     body: message
+//                                 },
+//                                 to: deviceid
+//                             })
+//                         },function(err,response,body){
+//                             if(err){
+//                                 res.json({
+//                                     status: false,
+//                                     message: "Error Occured" + err
+//                                 });
+//                             }else if(response.statusCode >= 400){
+//                                 // res.json({
+//                                 //     Error: response.statusCode + '-' +response.statusMessage + '\n' + response.body
+//                                 // });
+
+//                                 console.log(response.statusMessage)
+//                             }else{
+//                                console.log("done")
+//                             }
+//                         })
+
+//                     }
+
+//             for(i in location){
+//                 sendMessage((location[i].fcm_id),message);
+//             }
+
+
+                     
+
+//             res.json({
+//                 status: true,
+//                 message: location
+//             })
+//         }
+//     })
+
+
+
+
+//     connection.release();
+//     })
+
+
+// })
+
+
+
+
+// app.post('/driverslist',function(req,res){
+
+//     var customer_id = req.headers['id'];
+
+//     var booking_id = req.body.booking_id ;
+
+//     pool.getConnection(function(err,connection){
+//         if(err){
+//             res.json({
+//                 code : 100,
+//                 message : "Error in connecting Database"
+//             })
+//         }
+
+    
+//     connection.query('SELECT job_bidding.booking_id,job_bidding.bidding_cost,job_bidding.bidding_id,driver.driver_id,driver.driver_image,driver.driver_name,driver.driver_rating,driver.driver_job_status,truck.truck_id,truck.truck_type,truck.truck_image_front,truck.truck_image_back,truck.truck_image_side,truck.damage_control FROM job_bidding INNER JOIN driver ON job_bidding.driver_id = driver.driver_id INNER JOIN truck ON job_bidding.driver_id = truck.driver_id WHERE job_bidding.booking_id = ?',[booking_id],function(err,job){
+//         if(err) throw err ;
+
+//         if(job == 0){
+//             res.json({
+//                 status : false,
+//                 message : "No job listed here"
+//             })
+//         }else if(job != 0){
+//             res.json({
+//                 status : true,
+//                 message : job
+//             })
+//         } 
+//     });
+
+//         connection.release();
+//     })
+// });
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,245 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title ::Vagans Traffix::
+    style(type='text/css').
+      body
+      {
+      font-family:Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+      font-size:15px;
+      font-weight:normal;
+      color:#333;
+      line-height:25px;
+      }
+      .text-dark
+      {
+      color:#333;
+      }
+      .text-white
+      {
+      color:#fff;
+      }
+      .pad
+      {
+      padding:3px 5px;
+      }
+      .bredr
+      {
+      border:1px solid #333;
+      }
+      .bredr-bttm
+      {
+      border-bottom:2px solid #ccc;
+      }
+      h1
+      {
+      font-weight:normal;
+      }
+  body
+    - var client = client1
+    - var address = address1
+    - var street = street1
+    - var municipality = municipality1
+    - var province = province1
+    - var offencenumber = offencenumber1
+    - var offencedate = offencedate1
+    - var date = date1
+    table.bredr(width='1050', border='0', align='center', cellpadding='5', cellspacing='5')
+      tbody
+        tr
+          td
+            table(width='1000', border='0', align='center', cellpadding='0', cellspacing='0')
+              tbody
+                tr
+                  td(height='55', align='center', valign='middle')
+                    img(src='file:///C:/NodeTrial/3021Vagan/public/header.png', width='974', height='66')
+                tr
+                  td.bredr-bttm(height='55', align='center', valign='middle')
+                    h1 Retainer Agreement
+                tr
+                  td(align='right', valign='middle')
+                    strong From the Office of
+                tr
+                  td(align='right', valign='middle')
+                    img(width='275', height='110', src='file:///C:/NodeTrial/3021Vagan/public/index.jpg')
+                tr
+                  td(height='35', align='left', valign='middle')
+                    | Dated: 
+                    input#textfield(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td(height='55', align='left', valign='middle')
+                    p
+                      label(for='textarea') Address
+                      textarea#textarea(name='textarea') #{address}
+                    |  
+                    strong
+                      | File Name: Employment Contract File Number: 
+                      input#textfield11(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td(align='left', valign='middle') &nbsp;
+                tr
+                  td(align='center', valign='middle')
+                tr
+                  td
+                    | I 
+                    input#textfield5(type='text', name='textfield2', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                    |  have retained the services of Mr. Sriram Rangan of Vagans Legal Services Professional Corporation of with regards to my matter 
+                    input#textfield10(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                    |  Mr. Sriram Rangan is authorized to act as my Legal Counsel in all respect and manner pertaining to this/these matter(s).
+                tr
+                  td(height='35')
+                tr
+                  td &nbsp;
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='2', cellpadding='2')
+                      tbody
+                        tr
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Date
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Traffic Section No
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Description
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Location
+                        tr
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield1(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;',value=date)
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield2(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield3(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield4(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td
+                tr
+                  td
+                    p
+                      | I further acknowledge having been informed by Mr. Sriram Rangan that Vagans Legal Services Professional Corporation may appoint any other person who is a Licensed Paralegal in the absence of the Paralegal in the Company&rsquo;s sole discretion, providing such a person holds himself or herself as a competent Licensed Paralegal in Provincial Offences Act matters.
+                tr
+                  td
+                tr
+                  td
+                    p
+                      strong
+                        | Mr. Sriram Rangan is hereby authorized by me to do any or all of the following on my behalf IN MY ABSENCE:
+                    ul
+                      li
+                        | Enter into discussion and negotiate for the purpose of resolution in the First Attendance Meeting so scheduled.
+                      li Request adjournments and negotiate and set Trial dates.
+                      li
+                        | Obtain and review Disclosure and enter into resolution discussion with the Prosecutor.
+                    |  Conduct a Trial with or without my attendance and enter guilty plea and speak to sentence.
+                tr
+                  td &nbsp;
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='1', cellpadding='1')
+                      tbody
+                        tr
+                          td(width='51') Initial
+                          td(width='942')
+                            input#textfield6(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td
+                tr
+                  td
+                    ul
+                      li I Understand by entering a guilty plea, I am giving up my right to trial
+                      li I am doing so voluntarily
+                      li I understand the consequences of such a plea
+                      li
+                        | Institute and represent in Appeal and Re-opening matter(s) and enter into a resolution.
+                tr
+                  td
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='1', cellpadding='1')
+                      tbody
+                        tr
+                          td(width='51') Others
+                          td(width='942')
+                            input#textfield7(type='text', name='textfield', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td
+                tr
+                  td
+                    p
+                      | I further acknowledge being advised by Mr. Sriram Rangan of the statutory consequences of a conviction or outcome of this/these matter(s) and that no guarantee as to the final outcome of the matter(s) under which I am charged has been offered to me.
+                tr
+                  td
+                tr
+                  td
+                    p
+                      | I understand that Vagans Legal Services Professional Corporation may terminate this retainer and discontinue providing services should any of the following occur:
+                    ul
+                      li Non-payment of fees by the prescribed time
+                      li Loss of confidence
+                      li No instructions
+                      li No communication from me (the client)
+                      li A conflict of interest develops
+                      li
+                        | Unnecessary telephone calls and being rude to the people working for Vagans Legal Services Professional Corporation and their designates.
+                    p
+                      | We will make every effort to reach settlement in accordance with your wishes. However, we cannot guarantee success or that we will be able to reach a negotiated settlement. We will keep you fully informed of all events as they develop, but as we explained to you there may be periods of time in which nothing is taking place, or we are waiting for responses from other parties or we are waiting for a trial date.
+                tr
+                  td
+                tr
+                  td
+                    p
+                      | We will try to return your phone calls or respond to your letters as quickly as possible, but we will not always be able to do so on the same day that you have left a message. If a matter is urgent, please let the writer&rsquo;s secretary know and we will make every effort to respond to you on an urgent basis.
+                    |  If any of the items set forth above are not as you feel our agreement to be, please contact us immediately. We also wish to confirm our agreement as to fees and payment. Our fees for legal services are
+                tr
+                  td &nbsp;
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='1', cellpadding='1')
+                      tbody
+                        tr
+                          td(width='253', height='45', align='left', valign='middle', bgcolor='#F3F3F3')
+                            span.pad
+                              | $ 
+                              input#textfield(type='text', name='textfield8', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                          td(width='740', height='45') &nbsp;
+                        tr
+                          td(height='45', align='right', valign='middle', bgcolor='#F3F3F3')
+                            span.pad
+                              input#textfield(type='text', name='textfield9', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                              |  /- HST
+                          td(height='45') &nbsp;
+                tr
+                  td &nbsp;
+                tr
+                  td
+                    | for the case plus any out-of-pocket expenses (also known as disbursements) that may be incurred, such as filing fees etc.
+                tr
+                  td
+                tr
+                  td
+                    p
+                      | I undertake and confirm that I am the person named above and that I have full authority to instruct my representative on the matters at issue.
+                tr
+                  td &nbsp;
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='1', cellpadding='1')
+                      tbody
+                        tr
+                          td.pad.bredr-bttm &nbsp;
+                tr
+                  td &nbsp;
+                tr
+                  td(align='center', valign='middle') --End of Retainer Agreement--
+                tr
+                  td(align='center', valign='middle') &nbsp;

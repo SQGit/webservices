@@ -174,7 +174,7 @@ app.post('/driversignup',function(req,res){
 
     var fake_id = "MOVD" + num2 + char2 + num1 ;
 
-    var driversignup = {driver_name:req.headers['driver_name'],driver_mobile_pri:req.headers['driver_mobile_pri'],driver_email:req.headers['driver_email'],driver_mobile_sec:req.headers['driver_mobile_sec'],driver_experience:req.headers['driver_experience'],driver_licence_name:req.headers['driver_licence_name'],driver_licence_number:req.headers['driver_licence_number'],driver_licence_image:req.files,created_date:created,driver_job_status:"free",driver_operated_by:"movehaul",driver_verification:"pending",driver_status:"inactive",account_status:"inactive",fake_id : fake_id,fcm_id:req.headers['fcm_id'],vehicle_type: req.headers['vehicle_type']};
+    var driversignup = {driver_name:req.headers['driver_name'],driver_mobile_pri:req.headers['driver_mobile_pri'],driver_email:req.headers['driver_email'],driver_mobile_sec:req.headers['driver_mobile_sec'],driver_experience:req.headers['driver_experience'],driver_licence_name:req.headers['driver_licence_name'],driver_licence_number:req.headers['driver_licence_number'],driver_licence_image:req.files,created_date:created,driver_job_status:"free",driver_operated_by:"movehaul",driver_verification:"pending",driver_status:"inactive",account_status:"inactive",fake_id : fake_id,fcm_id:req.headers['fcm_id'],vehicle_type: req.headers['vehicle_type'],driver_address: req.headers['driver_address'],service_type: req.headers['service_type'],primary_route: req.headers['primary_route'],service_areas_distance: req.headers['service_areas_distance'],local_government: req.headers['local_government'],service_areas: req.headers['service_areas'],reference1: req.headers['reference1'],reference2: req.headers['reference2'],reference3: req.headers['reference3']};
 
     
 
@@ -488,6 +488,14 @@ busRoutes.post('/mobilelogin',function(req,res){
                     var driver_status = mobile[0].driver_status;
                     var account_status = mobile[0].account_status;
                     var vehicle_type = mobile[0].vehicle_type;
+                    var service_type = mobile[0].service_type;
+                    var primary_route = mobile[0].primary_route;
+                    var service_areas_distance = mobile[0].service_areas_distance;
+                    var local_government = mobile[0].local_government;
+                    var service_areas = mobile[0].service_areas;
+                    var reference1 = mobile[0].reference1;
+                    var reference2 = mobile[0].reference2;
+                    var reference3 = mobile[0].reference3;
             
             connection.query('SELECT * FROM bus WHERE driver_id = ?',[driver_id],function(err,bus){
                 if(err) throw err;
@@ -509,6 +517,7 @@ busRoutes.post('/mobilelogin',function(req,res){
                                               fake_id : fake_id,
                                               driver_mobile : driver_mobile,
                                               driver_mobile_sec : driver_mobile_sec,
+                                              driver_address : driver_address,
                                               driver_email : driver_email,
                                               driver_name : driver_name,
                                               driver_image : driver_image,
@@ -517,7 +526,15 @@ busRoutes.post('/mobilelogin',function(req,res){
                                               driver_status : driver_status,
                                               account_status : account_status,
                                               vehicle_type : vehicle_type,
-                                              token : token
+                                              token : token,
+                                              service_type: service_type,
+                                              primary_route: primary_route,
+                                              service_areas_distance: service_areas_distance,
+                                              local_government: local_government,
+                                              service_areas: service_areas,
+                                              reference1: reference1,
+                                              reference2: reference2,
+                                              reference3: reference3
                                           });
                                 
                             }
@@ -572,7 +589,15 @@ busRoutes.post('/mobilelogin',function(req,res){
                                                bus_insurance_image1 : bus_insurance_image1,
                                                bus_insurance_image2 : bus_insurance_image2,
                                                bus_verification : bus_verification,
-                                               token : token
+                                               token : token,
+                                               service_type: service_type,
+                                               primary_route: primary_route,
+                                               service_areas_distance: service_areas_distance,
+                                               local_government: local_government,
+                                               service_areas: service_areas,
+                                               reference1: reference1,
+                                               reference2: reference2,
+                                               reference3: reference3
                                            });
 
                             }
@@ -635,6 +660,15 @@ busRoutes.post('/emaillogin',function(req,res){
                     var account_status = email[0].account_status;
                     var vehicle_type = email[0].vehicle_type;
 
+                    var service_type = email[0].service_type;
+                    var primary_route = email[0].primary_route;
+                    var service_areas_distance = email[0].service_areas_distance;
+                    var local_government = email[0].local_government;
+                    var service_areas = email[0].service_areas;
+                    var reference1 = email[0].reference1;
+                    var reference2 = email[0].reference2;
+                    var reference3 = email[0].reference3;
+
                  connection.query('SELECT * FROM bus WHERE driver_id = ?',[driver_id],function(err,bus){
                 if(err) throw err;
 
@@ -664,7 +698,15 @@ busRoutes.post('/emaillogin',function(req,res){
                                             driver_status : driver_status,
                                             account_status : account_status,
                                             vehicle_type : vehicle_type,
-                                            token : token
+                                            token : token,
+                                            service_type: service_type,
+                                            primary_route: primary_route,
+                                            service_areas_distance: service_areas_distance,
+                                            local_government: local_government,
+                                            service_areas: service_areas,
+                                            reference1: reference1,
+                                            reference2: reference2,
+                                            reference3: reference3
                                         });
 
                             }
@@ -715,7 +757,15 @@ busRoutes.post('/emaillogin',function(req,res){
                                            bus_insurance_image1 : bus_insurance_image1,
                                            bus_insurance_image2 : bus_insurance_image2,
                                            bus_verification : bus_verification,
-                                           token : token
+                                           token : token,
+                                           service_type: service_type,
+                                           primary_route: primary_route,
+                                           service_areas_distance: service_areas_distance,
+                                           local_government: local_government,
+                                           service_areas: service_areas,
+                                           reference1: reference1,
+                                           reference2: reference2,
+                                           reference3: reference3
                                        });
 
                             }

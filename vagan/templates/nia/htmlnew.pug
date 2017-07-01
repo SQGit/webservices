@@ -1,0 +1,262 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title ::NIA Agreement::
+    style(type='text/css').
+      input
+      {
+      border-bottom:1px solid #333;
+      border-top:none;
+      border-left:none;
+      border-right:none;
+      width:100%;
+      }
+      table, td, tr
+      {
+      margin:0;
+      padding:0;
+      }
+      .ftt
+      {
+      font-size:20px;
+      }
+      .ftt-1
+      {
+      font-size:15px;
+      }
+  body
+    - var name = name1
+    - var address = address1
+    - var streetname = streetname1
+    - var city = city1
+    - var province = province1
+    - var postal_code = postal_code1
+    - var offence_number = offence_number1
+    - var offence_date = offence_date1
+    - var user_mobile = user_mobile1
+    - var nia_sign_image = nia_sign_image1
+    - var apartment_no = apartment_no1
+    table(width='100%', align='left')
+      tbody
+        tr
+          td.ftt(colspan='30', align='center', valign='middle') NOTICE OF INTENTION TO APPEAR
+        tr
+          td.ftt(colspan='30', align='center', valign='top')
+            em AVIS D’INTENTION DE COMPARAÎTRE
+        tr
+          td(colspan='7', rowspan='4', align='left', valign='top')
+            | ONTARIO COURT OF JUSTICE 
+            em COUR DE JUSTICE DE L’ONTARIO
+            br
+            | Province of Ontario 
+            em
+              br
+              | Province de l’Ontario
+          td(colspan='18')  
+          td(colspan='5', rowspan='3', align='left', valign='top')
+            | Form /
+            em  Formulaire
+            |  8 
+            em Provincial Offences Act
+            |  Loi sur les infractions provinciales
+        tr
+          td(colspan='18')  
+        tr
+          td(colspan='18')  
+        tr
+          td(colspan='18')  
+          td(colspan='5')  
+        tr
+          td(colspan='4') TAKE NOTICE THAT I,
+          td(colspan='26')
+            input#textfield1(type='text', name='textfield',value=name)
+        tr
+          td(colspan='10') VEUILLEZ PRENDRE AVIS QUE JE SOUSSIGNÉ(E),
+          td(colspan='20')
+            | (defendant’s name / 
+            em nom du défendeur/de la défenderesse
+            | )
+        tr
+          td(colspan='16')
+            input#textfield2(type='text', name='textfield',value=address)
+          td(width='9')  
+          td(colspan='5')
+            input#textfield3(type='text', name='textfield',value=streetname)
+          td(width='9')  
+          td(colspan='6')
+            input#textfield4(type='text', name='textfield',value=apartment_no)
+          td(width='111')  
+        tr
+          td(colspan='16')
+            | (current address / 
+            em adresse actuelle
+            | )
+          td(width='9')  
+          td(colspan='5')
+            | (street /
+            em  rue
+            | )
+          td(width='9')  
+          td(colspan='6')
+            | (apt. / 
+            em app.
+            | )
+          td(width='111')  
+        tr
+          td(colspan='9')
+            input#textfield5(type='text', name='textfield', placeholder='Toronto',value=city)
+          td(colspan='2')  
+          td(colspan='9')
+            input#textfield6(type='text', name='textfield', placeholder='Ontario',value=province)
+          td(width='9')  
+          td(colspan='7')
+            input#textfield7(type='text', name='textfield',value=postal_code)
+          td(colspan='2')  
+        tr
+          td(colspan='9')
+            | (municipality / 
+            em municipalité
+            | )
+          td(colspan='2')  
+          td(colspan='9') (province)
+          td(width='9')  
+          td(colspan='7')
+            | (postal code / 
+            em code postal
+            | )
+          td(colspan='2')  
+        tr
+          td(colspan='13')
+            input#textfield8(type='text', name='textfield',value=offence_number)
+          td(colspan='5')  
+          td(colspan='12')
+            input#textfield9(type='text', name='textfield',value=offence_date)
+        tr
+          td(colspan='13')
+            | (offence number / 
+            em numéro
+            em de l’infraction
+            | )
+          td(colspan='5')  
+          td(colspan='12')
+            | (offence date / 
+            em date de l’infraction
+            | )
+        tr
+          td(colspan='30')
+            | wish to give notice of my intention to appear in court to enter a plea of not guilty at the time and place set for the trial respecting the charge set out in the Offence Notice or Parking Infraction Notice.
+        tr
+          td(colspan='30')
+            | désire donner avis de mon intention de comparaître devant le tribunal pour inscrire un plaidoyer de non-culpabilité à l’heure et au lieu prévus pour le procès en réponse à l’accusation énoncée dans l’avis d’infraction ou l'avis d'infraction de stationnement.
+        tr
+          td(width='27')
+            input(type='checkbox')
+          td(colspan='29')
+            | I intend to appear in court to enter a plea at the time and place set for the trial and I wish that it be held in the English language.
+        tr
+          td(width='27')
+            input(type='checkbox')
+          td(colspan='29')
+            | J’ai l’intention de comparaître devant le tribunal pour inscrire un plaidoyer à l’heure et au lieu prévus pour le procès et je désire que le procès se déroule en français.
+        tr
+          td(colspan='3') I request a
+          td(colspan='14')
+            input#textfield10(type='text', name='textfield')
+          td(colspan='13') language interpreter for the trial.
+        tr
+          td(colspan='3')  
+          td(colspan='14') (leave blank if inapplicable)
+          td(colspan='13')  
+        tr
+          td.ftt-1(colspan='10')
+            em Je demande l’aide d’un interprète en langue
+          td(colspan='14')
+            input#textfield11(type='text', name='textfield')
+          td(colspan='6')
+            em pour le procès.
+        tr
+          td(colspan='10')
+            em  
+          td(colspan='14')
+            em (à remplir, s'il y a lieu)
+          td(colspan='6')
+            em  
+        tr
+          td(colspan='2')
+            strong Note:
+          td(colspan='10')
+            | If you 
+            strong fail to notify
+            |  the court office of 
+            strong address changes
+            |  you may not receive important notices 
+            em e.g.,
+            |  your Notice of Trial. You may be convicted in your absence if you do not attend the trial.
+          td(colspan='4')  
+          td(colspan='3')
+            strong
+              em Remarque : 
+          td(colspan='11')
+            em
+              | Si vous 
+              strong omettez
+              strong de prévenir
+              |  le greffe du tribunal de 
+              strong tout
+              strong changement d’adresse
+              | , vous pourriez ne pas recevoir d’importants avis (p. ex., votre avis de procès). Vous pourriez être déclaré(e) coupable en votre absence si vous n’assistez pas au procès.
+        tr
+          td(colspan='12')
+            img(src="file:///C:/NodeTrial/3021Vagan/public/ticketimages/" + nia_sign_image,style="width:250px;height:40px;")
+            input#textfield12(type='text', name='textfield')
+          td(width='9')  
+          td(colspan='11')
+            input#textfield13(type='text', name='textfield',value=offence_date)
+          td(rowspan='2', width='9')  
+          td(colspan='3')
+            input#textfield14(type='text', name='textfield',value=user_mobile)
+        tr
+          td(colspan='12')
+            | Signature of defendant /
+            br
+            em Signature 
+            em du défendeur/de la défenderesse
+          td(width='9')  
+          td(colspan='11') (date)
+          td(rowspan='2', width='9') 
+          td(colspan='3')
+            | (telephone number / 
+            em numéro de téléphone
+            | )
+        //- tr
+        //-   td(width='27')  
+        //-   td(width='19')  
+        //-   td(width='20')  
+        //-   td(width='101')  
+        //-   td(width='1')  
+        //-   td(width='9')  
+        //-   td(width='12')  
+        //-   td(width='57')  
+        //-   td(width='55')  
+        //-   td(width='3')  
+        //-   td(width='6')  
+        //-   td(width='15')  
+        //-   td(width='9')  
+        //-   td(width='4')  
+        //-   td(width='9')  
+        //-   td(width='2')  
+        //-   td(width='3')  
+        //-   td(width='48')  
+        //-   td(width='26')  
+        //-   td(width='31')  
+        //-   td(width='9')  
+        //-   td(width='13')  
+        //-   td(width='9')  
+        //-   td(width='41')  
+        //-   td(width='14')  
+        //-   td(width='26')  
+        //-   td(width='9')  
+        //-   td(width='20')  
+        //-   td(width='23')  
+        //-   td(width='111')  

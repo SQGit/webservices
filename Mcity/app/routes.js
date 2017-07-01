@@ -29,6 +29,14 @@ var Room = require('./models/room');
 
 var Admin = require('./models/admin');
 
+// Instamojo
+
+let instaapikey = '18cbab13db783550e4782ca03ba3f31d';
+let instaauth = 'ea16214097b5112f89b8dfce2c271c75';
+
+var Insta = require('instamojo-nodejs');
+Insta.setKeys(instaapikey,instaauth);
+
 //Post for Rent Image Storage
 
 var rentstorage = multer.diskStorage({
@@ -100,7 +108,25 @@ var mcity = express.Router();
 
 
 
+// Insta mojo
 
+
+mcity.post('/createpayment',function(req,res){
+
+    
+
+    let transactionid = req.body.transactionid;
+    let name = req.body.name;
+    let email = req.body.email;
+    let phone = req.body.phone;
+    let amount = req.body.amount;
+    let purpose = req.body.purpose;
+
+
+    
+
+
+})
 
 
 
@@ -3207,6 +3233,34 @@ apiRoutes.post('/updateceas',function(req,res){
 })
 
 
+
+apiRoutes.post('/getshoppingitems',function(req,res){
+
+    var id = req.headers['id'];
+
+    var shopid = req.body.shopid ;
+
+    Admin.findById(shopid,{"shopping_items_cat":1},function(err,items){
+        if(err){
+            res.json({
+                status: false,
+                message: "Error Occured " + err 
+            })
+        }else{
+            res.json({
+                status: true,
+                message: items
+            })
+        }
+    })
+
+})
+
+
+
+
+
+
 apiRoutes.get('/',function(req,res){
     res.json({message : 'Welcome to the coolest API on earth'});
 });
@@ -3216,6 +3270,7 @@ apiRoutes.get('/users',function(req,res){
         res.json(users);
     });
 });
+
 
 
 

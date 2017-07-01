@@ -1,0 +1,176 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title ::Vagans Traffix::
+    style(type='text/css').
+      body
+      {
+      font-family:Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+      font-size:15px;
+      font-weight:normal;
+      color:#333;
+      line-height:25px;
+      }
+      .text-dark
+      {
+      color:#333;
+      }
+      .text-white
+      {
+      color:#fff;
+      }
+      .pad
+      {
+      padding:3px 5px;
+      }
+      .bredr
+      {
+      border:1px solid #333;
+      }
+      .bredr-bttm
+      {
+      border-bottom:2px solid #ccc;
+      }
+      h1
+      {
+      font-weight:normal;
+      }
+  body
+    - var client = client1
+    - var address = address1
+    - var street = street1
+    - var municipality = municipality1
+    - var province = province1
+    - var offencenumber = offencenumber1
+    - var offencedate = offencedate1
+    - var date = date1
+    table.bredr(width='1050', border='0', align='center', cellpadding='5', cellspacing='5')
+      tbody
+        tr
+          td
+            table(width='1000', border='0', align='center', cellpadding='0', cellspacing='0')
+              tbody
+                tr
+                  td(width='100%', height='55', align='center', valign='middle')
+                    img(src='file:///C:/NodeTrial/3021Vagan/public/header.png', width='974', height='66')
+                tr
+                  td.bredr-bttm(height='55', align='center', valign='middle')
+                    h1 Notice of Intention to Appear(NIA)
+                tr
+                  td(align='right', valign='middle')
+                    strong From the Office of
+                tr
+                  td(align='right', valign='middle')
+                    img(width='275', height='110', src='file:///C:/NodeTrial/3021Vagan/public/index.jpg')
+                tr
+                  td(height='35', align='left', valign='middle')
+                    strong ONTARIO COURT OF JUSTICE
+                    br
+                    |  
+                    strong PROVINCE OF ONTARIO
+                tr
+                  td(align='left', valign='middle')
+                    table(width='1000', border='0', align='left', cellpadding='3', cellspacing='3')
+                      tbody
+                        tr
+                          td(width='129') Take notice that, I
+                          td
+                            input#textfield(type='text', name='textfield', placeholder='John Richard', style='border:1px solid #ccc; padding:5px;', value=client)
+                tr
+                  td(align='center', valign='middle')
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='2', cellpadding='2')
+                      tbody
+                        tr
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Current Address
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Street
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Apartment
+                          td(height='45', align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Municipality
+                          td(align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Province
+                          td(align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Offence Number
+                          td(align='left', valign='middle', bgcolor='#D4D4D4')
+                            strong
+                              span.pad Offence Date
+                        tr
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield1(type='text', name='textfield', placeholder='Current Address', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield2(type='text', name='textfield', placeholder='Street', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield3(type='text', name='textfield', placeholder='Apartment', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield4(type='text', name='textfield', placeholder='Municipality', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield5(type='text', name='textfield', placeholder='Province', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield6(type='text', name='textfield', placeholder='Offence Number', style='border:1px solid #ccc; padding:5px;')
+                          td(height='45', bgcolor='#F1F1F1')
+                            span.pad
+                              input#textfield7(type='text', name='textfield', placeholder='Offence Date', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td &nbsp;
+                tr
+                  td
+                    p
+                      | wish to give notice of my intention to appear in court to enter a plea of not guilty at the time and place set for the trial respecting the charge set out in the Offence Notice or Parking Infraction Notice.
+                tr
+                  td
+                tr
+                  td
+                    | I intend to appear in court to enter a plea at the time and place set for the trial and I wish that it be held in the English language.
+                tr
+                  td
+                    table(width='1000', border='0', align='left', cellpadding='3', cellspacing='3')
+                      tbody
+                        tr
+                          td(width='128') I request a
+                          td(width='168')
+                            input#textfield8(type='text', name='textfield2', placeholder='John Richard', style='border:1px solid #ccc; padding:5px;')
+                          td language interpreter for the trial.
+                        tr
+                          td(colspan='3')
+                            | If you fail to notify the court office of address changes you may not receive important notices e.g., your Notice of Trial. You may be convicted in your absence if you do not attend the trial.
+                    |  .
+                tr
+                  td
+                    table(width='1000', border='0', cellspacing='3', cellpadding='3')
+                      tbody
+                        tr
+                          td(width='419', height='45', align='left', valign='middle', bgcolor='#F3F3F3')
+                            span.pad Signature of the Defendent
+                          td(width='574', height='45', bgcolor='#F3F3F3')
+                            input#textfield9(type='text', name='textfield2', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                        tr
+                          td.pad(height='45', align='left', valign='middle', bgcolor='#F3F3F3') Date
+                          td(height='45', bgcolor='#F3F3F3')
+                            input#textfield10(type='text', name='textfield2', placeholder='', style='border:1px solid #ccc; padding:5px;',value=date)
+                        tr
+                          td.pad(height='45', align='left', valign='middle', bgcolor='#F3F3F3') Telephone Number
+                          td(height='45', bgcolor='#F3F3F3')
+                            input#textfield11(type='text', name='textfield2', placeholder='', style='border:1px solid #ccc; padding:5px;')
+                tr
+                  td &nbsp;
+                tr
+                  td(align='center', valign='middle') --End of Notice of Intention to Appear--
+                tr
+                  td(align='center', valign='middle') &nbsp;
