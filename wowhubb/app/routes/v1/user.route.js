@@ -36,6 +36,33 @@ router.route('/personalcover')
 router.route('/personalself')
   .post(authorize(), personalself, controller.personalself);
 
+router.route('/updateprofessionalprofile')
+  .post(authorize(), controller.updateprofessionalprofile);
+
+router.route('/updateworkexperience')
+  .post(authorize(), controller.updateworkexperience);
+
+router.route('/getprofessionalprofile')
+  .post(authorize(), controller.getprofessionalprofile);
+
+router.route('/getthirdpartyprofile')
+  .post(authorize(), controller.getthirdpartyprofile);
+
+router.route('/profileoverview')
+  .post(authorize(), controller.profileoverview);
+
+router.route('/profileaboutme')
+  .post(authorize(), controller.profileaboutme);
+
+router.route('/profilecontact')
+  .post(authorize(), controller.profilecontact);
+
+router.route('/profileinfo')
+  .post(authorize(), controller.profileinfo);
+
+router.route('/updaterelationship')
+  .post(authorize(), controller.updaterelationship);
+
 // router
 //   .route('/profile')
 

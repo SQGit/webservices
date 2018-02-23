@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const mongoosePaginate = require('mongoose-paginate'); // page
 
 
 const audeinceEngagementUrl = new mongoose.Schema({
@@ -23,52 +22,10 @@ const programSchedule = new mongoose.Schema({
 const eventVenue = new mongoose.Schema({
   eventvenuenumber: { type: String },
   eventvenuename: { type: String },
-
-  eventvenuestartdate: { type: String },
-  eventvenueenddate: { type: String },
-
   eventvenueaddress1: { type: String },
   eventvenueaddress2: { type: String },
   eventvenuecity: { type: String },
-
-  eventvenuecitytimezone: { type: String },
-  eventvenuecountry: { type: String },
-  eventvenueticketurl: { type: String },
-  eventvenueticketprice: { type: String },
-
   eventvenuezipcode: { type: String },
-});
-
-
-const eventTour = new mongoose.Schema({
-  eventtournumber: { type: String },
-  eventtourname: { type: String },
-
-  eventtourstartdate: { type: String },
-  eventtourenddate: { type: String },
-
-  eventtouraddress1: { type: String },
-  eventtouraddress2: { type: String },
-  eventtourcity: { type: String },
-
-  eventtourcountry: { type: String },
-  eventtourticketurl: { type: String },
-  eventtourticketprice: { type: String },
-
-  eventtourzipcode: { type: String },
-});
-
-const eventFaqs = new mongoose.Schema({
-  faqnumber: { type: String },
-  faqquestion: { type: String },
-  faqanswer: { type: String },
-});
-
-const physicalStoreLocation = new mongoose.Schema({
-  storename: { type: String },
-  storeaddress: { type: String },
-  zipcode: { type: String },
-  city: { type: String },
 });
 
 const Wowsome = new mongoose.Schema({
@@ -89,60 +46,12 @@ const Comments = new mongoose.Schema({
 const eventSchema = new mongoose.Schema({
   userid: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
   eventtype: { type: String },
-  eventtypeint: { type: Number },
-  eventdayscount: { type: Number },
   eventcategory: { type: String },
   eventname: { type: String },
   eventtimezone: { type: String },
   eventstartdate: { type: String },
   eventenddate: { type: String },
   eventdescription: { type: String },
-
-  /* Worst Coding feature requested from web */
-  eventcity: { type: String },
-  /*  */
-
-  // Sales
-
-  brandawareness: { type: String },
-  sponsorslogo: { type: String },
-
-  // salesOnlineShopping
-
-  onlinesalesobjective: { type: String },
-  onlinesalespromotioncountry: { type: String },
-  onlinesalespromotionstate: { type: String },
-  onlinesalespromotionurl: { type: String },
-
-  // salesPhysicalShopping
-
-  physicalsalespromotioncountry: { type: String },
-  physicalsalespromotionstate: { type: String },
-  physicalsalesstorelocation: [physicalStoreLocation],
-
-  // SalesEventOfferings
-
-  eventsalescoupon1: { type: String },
-  eventsalesservicename1: { type: String },
-  eventsalesdiscount1: { type: String },
-  eventsalescouponfrom1: { type: String },
-  eventsalescouponto1: { type: String },
-  eventsalesaction1: { type: String },
-  eventsalesterms1: { type: String },
-
-  eventsalescoupon2: { type: String },
-  eventsalesservicename2: { type: String },
-  eventsalesdiscount2: { type: String },
-  eventsalescouponfrom2: { type: String },
-  eventsalescouponto2: { type: String },
-  eventsalesaction2: { type: String },
-  eventsalesterms2: { type: String },
-
-  salesemail: { type: String },
-  salesphonenumber: { type: String },
-  saleshostmessage: { type: String },
-
-  //
 
   organisationlogo: { type: String },
 
@@ -155,28 +64,6 @@ const eventSchema = new mongoose.Schema({
   runtimeto: { type: String },
   wowtagvideo: { type: String },
   eventvenue: [eventVenue],
-  eventtour: [eventTour],
-  eventtouraddressvisibility: { type: String },
-  eventtourguestshare: { type: String },
-  onlineeventtour: { type: String },
-  inviteonlyeventtour: { type: String },
-  numberofcitiestour: { type: String },
-
-  eventfaqs: [eventFaqs],
-
-  /* Worst Coding feature requested from web */
-
-  faqquestion1: { type: String },
-  faqanswer1: { type: String },
-  faqquestion2: { type: String },
-  faqanswer2: { type: String },
-  faqquestion3: { type: String },
-  faqanswer3: { type: String },
-  faqquestion4: { type: String },
-  faqanswer4: { type: String },
-
-  /*  */
-
   eventvenueaddressvisibility: { type: String },
   eventvenueguestshare: { type: String },
   onlineevent: { type: String },
@@ -186,7 +73,7 @@ const eventSchema = new mongoose.Schema({
   programschedule: [programSchedule],
 
   organisationname: { type: String },
-  keywordsearch: { type: Array },
+  keywordsearch: { type: String },
 
   eventcontactname: { type: String },
   eventcontactphone: { type: String },
@@ -219,7 +106,6 @@ const eventSchema = new mongoose.Schema({
     city: { type: String },
     zipcode: { type: String },
     country: { type: String },
-    gender: { type: String },
   },
   audeinceengagementurl: {
     donationsurl: { type: String },
@@ -246,7 +132,5 @@ const eventSchema = new mongoose.Schema({
   comments: [Comments],
 });
 
-eventSchema.plugin(mongoosePaginate);
 
-
-module.exports = mongoose.model('event', eventSchema);
+module.exports = mongoose.model('eventtest', eventSchema);

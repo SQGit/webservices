@@ -9,5 +9,10 @@ router.route('/event/:name')
 router.route('/personal/:name')
   .get(controller.personal);
 
+router.route('/provider/:name')
+  .get(controller.provider);
+
+router.route('/nearby/:name')
+  .get(controller.nearby);
 
 module.exports = router;

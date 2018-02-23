@@ -23,7 +23,16 @@ router.route('/login')
 router.route('/emaillogin')
   .post(controller.emaillogin);
 
+router.route('/verifyotp')
+  .post(controller.verifyotp);
+
 router.route('/checktagid')
   .post(controller.checktagid);
+
+router.route('/forgetpassword')
+  .post(controller.forgetpassword);
+
+router.route('/changepassword')
+  .post(controller.changepassword);
 
 module.exports = router;

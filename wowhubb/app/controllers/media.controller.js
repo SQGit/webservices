@@ -20,3 +20,23 @@ exports.personal = async (req, res, next) => {
   return res.sendFile(filename, options);
 };
 
+exports.provider = async (req, res, next) => {
+  const options = {
+    root: path.join(__dirname, '..', '..', 'public', 'providerlogo'),
+  };
+
+  const filename = req.params.name;
+
+  return res.sendFile(filename, options);
+};
+
+
+exports.nearby = async (req, res, next) => {
+  const options = {
+    root: path.join(__dirname, '..', '..', 'public', 'nearbyevent'),
+  };
+
+  const filename = req.params.name;
+
+  return res.sendFile(filename, options);
+};
