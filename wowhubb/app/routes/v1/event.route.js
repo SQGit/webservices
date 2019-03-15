@@ -2,7 +2,8 @@ const express = require('express');
 // const validate = require('express-validation');
 const controller = require('../../controllers/event.controller');
 const { authorize } = require('../../middlewares/auth');
-const { eventdetails, eventwowtag, eventhighlights, couponimage, proeventdetails, saleseventdetails, saleseventofferings, nearbyevent, thoughtsfile } = require('../../middlewares/media');
+
+const { eventdetails, androideventdetails, eventwowtag, eventhighlights, couponimage, proeventdetails, saleseventdetails, saleseventofferings, nearbyevent, thoughtsfile } = require('../../middlewares/cloudinarymedia');
 
 const router = express.Router();
 
@@ -22,6 +23,9 @@ router.route('/getwowtag')
 
 router.route('/details')
   .post(authorize(), eventdetails, controller.eventdetails);
+
+router.route('/androideventdetails')
+  .post(authorize(), androideventdetails, controller.androideventdetails);
 
 router.route('/editeventdetails')
   .post(authorize(), eventdetails, controller.editeventdetails);
@@ -49,6 +53,12 @@ router.route('/highlights')
 
 router.route('/venue')
   .post(authorize(), controller.eventvenue);
+
+router.route('/androideventvenue')
+  .post(authorize(), controller.androideventvenue);
+
+router.route('/androidonlineevent')
+  .post(authorize(), controller.androidonlineevent);
 
 router.route('/tour')
   .post(authorize(), controller.eventtour);
@@ -83,6 +93,14 @@ router.route('/feed')
 router.route('/newfeed')
   .post(authorize(), controller.newfeed);
 
+router.route('/fetchparticularevent')
+  .post(authorize(), controller.fetchparticularevent);
+
+/* no auth */
+
+router.route('/fetchparticulareventnoauth')
+  .post(controller.fetchparticularevent);
+
 router.route('/todaysfeed')
   .post(authorize(), controller.todaysfeed);
 
@@ -92,11 +110,20 @@ router.route('/myfeeds')
 router.route('/hubbfeeds')
   .post(authorize(), controller.hubbfeeds);
 
+router.route('/futurehubbfeeds')
+  .post(authorize(), controller.futurehubbfeeds);
+
+router.route('/pasthubbfeeds')
+  .post(authorize(), controller.pasthubbfeeds);
+
 router.route('/wowsome')
   .post(authorize(), controller.wowsome);
 
 router.route('/postrsvp')
   .post(authorize(), controller.postrsvp);
+
+router.route('/audienceengagementsubmission')
+  .post(authorize(), controller.audienceengagementsubmission);
 
 router.route('/getrsvp')
   .post(authorize(), controller.getrsvp);
@@ -118,6 +145,12 @@ router.route('/proengagementcoupon')
 
 router.route('/deleteevent')
   .post(authorize(), controller.deleteevent);
+
+router.route('/editwowtagvideo')
+  .post(authorize(), eventwowtag, controller.editwowtagvideo);
+
+router.route('/deletewowtagvideo')
+  .post(authorize(), controller.deletewowtagvideo);
 
 router.route('/androidfeed')
   .post(authorize(), couponimage, controller.androidfeed);
@@ -161,5 +194,33 @@ router.route('/getnearbyeventslist')
 
 router.route('/getnearbyevents')
   .post(authorize(), controller.getnearbyevents);
+
+router.route('/geteventtitles')
+  .post(authorize(), controller.geteventtitles);
+
+router.route('/myeventtitles')
+  .post(authorize(), controller.myeventtitles);
+
+router.route('/getparticulareventtitle')
+  .post(authorize(), controller.getparticulareventtitle);
+
+router.route('/emailinvite')
+  .post(authorize(), controller.emailinvite);
+
+router.route('/groupemailinvite')
+  .post(authorize(), controller.groupemailinvite);
+
+// router.route('/smsinvite')
+// .post(authorize(), controller.smsinvite);
+
+// router.route('/groupsmsinvite')
+// .post(authorize(), controller.groupsmsinvite);
+
+
+router.route('/emailrender')
+  .get(controller.emailrender);
+
+router.route('/sendtest')
+  .post(controller.sendtest);
 
 module.exports = router;

@@ -2,13 +2,23 @@ const httpStatus = require('http-status');
 const jwt = require('jsonwebtoken');
 const twilio = require('twilio');
 const User = require('../models/user.model');
-const { jwtSecret, accountSid, authToken } = require('../config/vars');
+const Version = require('../models/version.model');
+const { jwtSecret } = require('../config/vars');
 const transporter = require('../middlewares/mail');
 const moment = require('moment');
 
 const Test = require('../models/test.model');
 
+// const client = twilio(accountSid, authToken);
+
+/* Twilio Config */
+
+const accountSid = 'ACc04aaaa52c3762a0a051b264d229d43e';
+const authToken = 'd8b0a4f0ef8ec9e33e5a08f52cbf526e';
+
 const client = twilio(accountSid, authToken);
+
+/*  */
 
 function generateTokenResponse(user) {
   const accessToken = jwt.sign(user, jwtSecret, {
@@ -88,7 +98,8 @@ exports.otp = async (req, res, next) => {          // eslint-disable-line
 
     const message = await client.messages.create({  // eslint-disable-line
       to: tonumber,
-      from: '+1 551-249-0177',
+      // from: '+1 551-249-0177',
+      from: '+1 872-244-6538',
       body: `Your Wowhubb otp is ${otp}`,
     });
       // let sid = message.sid
@@ -263,7 +274,7 @@ exports.signup = async (req, res, next) => {
     const createdAt = moment().format('YYYY/MM/DD H:mm:ss');
 
     // await (new User(req.body)).save();
-    const { firstname, lastname, phone, email, password, wowtagid, gender, birthday } = req.body;
+    const { firstname, lastname, phone, email, password, wowtagid } = req.body;
 
     const user = {
       firstname,
@@ -272,12 +283,15 @@ exports.signup = async (req, res, next) => {
       email,
       password,
       wowtagid,
-      gender,
-      birthday,
       createdAt,
     };
 
-    await (new User(user)).save();
+    const newuser = await (new User(user)).save();
+
+    const userid = newuser._id;
+
+    await User.findByIdAndUpdate(userid, { $push:
+      { oldpasswords: { oldpassword: password, createdAt } } });
 
     // const token = generateTokenResponse(user);
     res.status(httpStatus.CREATED);
@@ -325,8 +339,8 @@ exports.verifyotp = async (req, res, next) => {
         gender: checkuser.gender,
         wowtagid: checkuser.wowtagid,
         firsttime: checkuser.firsttime,
-        personalimage: checkuser.personalimage,
-        personalself: checkuser.personalself,
+        personalimageurl: checkuser.personalimageurl,
+        personalselfurl: checkuser.personalselfurl,
         friendrequestreceived: checkuser.friendrequestreceived,
         friendrequestsent: checkuser.friendrequestsent,
         friends: checkuser.friends,
@@ -369,8 +383,8 @@ exports.verifyotp = async (req, res, next) => {
       gender: checkuser.gender,
       wowtagid: checkuser.wowtagid,
       firsttime: checkuser.firsttime,
-      personalimage: checkuser.personalimage,
-      personalself: checkuser.personalself,
+      personalimageurl: checkuser.personalimageurl,
+      personalselfurl: checkuser.personalselfurl,
       friendrequestreceived: checkuser.friendrequestreceived,
       friendrequestsent: checkuser.friendrequestsent,
       friends: checkuser.friends,
@@ -396,9 +410,12 @@ exports.emaillogin = async (req, res, next) => {
     const { email, password } = req.body;
 
     const checkuser = await User.findOne({ email })
-      .populate('friends', 'wowtagid personalimage firstname lastname')
-      .populate('friendrequestsent', 'wowtagid personalimage firstname lastname')
-      .populate('friendrequestreceived', 'wowtagid personalimage firstname lastname');
+      .populate('friends', 'wowtagid personalimageurl firstname lastname')
+      .populate('friendrequestsent', 'wowtagid personalimageurl firstname lastname')
+      .populate('friendrequestreceived', 'wowtagid personalimageurl firstname lastname')
+      .populate('business', 'companyname')
+      .populate('eventservice', 'companyname')
+      .populate('eventvenue', 'companyname');
 
 
     if (!checkuser) {
@@ -431,12 +448,17 @@ exports.emaillogin = async (req, res, next) => {
       gender: checkuser.gender,
       wowtagid: checkuser.wowtagid,
       firsttime: checkuser.firsttime,
-      personalimage: checkuser.personalimage,
-      personalself: checkuser.personalself,
+      personalimageurl: checkuser.personalimageurl,
+      personalselfurl: checkuser.personalselfurl,
       friendrequestreceived: checkuser.friendrequestreceived,
       friendrequestsent: checkuser.friendrequestsent,
       friends: checkuser.friends,
       designation: checkuser.designation,
+      business: checkuser.business,
+      eventservice: checkuser.eventservice,
+      eventvenue: checkuser.eventvenue,
+      phonevisible: checkuser.phonevisible,
+      emailvisible: checkuser.emailvisible
     };
 
     const token = generateTokenResponse(user);
@@ -456,9 +478,13 @@ exports.login = async (req, res, next) => {
     const { phone, password } = req.body;
 
     const checkuser = await User.findOne({ phone })
-      .populate('friends', 'wowtagid personalimage firstname lastname')
-      .populate('friendrequestsent', 'wowtagid personalimage firstname lastname')
-      .populate('friendrequestreceived', 'wowtagid personalimage firstname lastname');
+      .populate('friends', 'wowtagid personalimageurl firstname lastname')
+      .populate('friendrequestsent', 'wowtagid personalimageurl firstname lastname')
+      .populate('friendrequestreceived', 'wowtagid personalimageurl firstname lastname')
+      .populate('business', 'companyname')
+      .populate('eventservice', 'companyname')
+      .populate('eventvenue', 'companyname');
+
 
     if (!checkuser) {
       return res.json({
@@ -490,12 +516,17 @@ exports.login = async (req, res, next) => {
       gender: checkuser.gender,
       wowtagid: checkuser.wowtagid,
       firsttime: checkuser.firsttime,
-      personalimage: checkuser.personalimage,
-      personalself: checkuser.personalself,
+      personalimageurl: checkuser.personalimageurl,
+      personalselfurl: checkuser.personalselfurl,
       friendrequestreceived: checkuser.friendrequestreceived,
       friendrequestsent: checkuser.friendrequestsent,
       friends: checkuser.friends,
       designation: checkuser.designation,
+      business: checkuser.business,
+      eventservice: checkuser.eventservice,
+      eventvenue: checkuser.eventvenue,
+      phonevisible: checkuser.phonevisible,
+      emailvisible: checkuser.emailvisible
     };
 
     const token = generateTokenResponse(user);
@@ -550,7 +581,8 @@ exports.forgetpassword = async (req, res, next) => {  // eslint-disable-line
 
       const message = await client.messages.create({  // eslint-disable-line
         to: phone,
-        from: '+1 551-249-0177',
+        // from: '+1 551-249-0177',
+        from: '+1 872-244-6538 ',
         body: `Your Wowhubb otp for changing password is ${otp}`,
       });
       // let sid = message.sid
@@ -606,8 +638,13 @@ exports.changepassword = async (req, res, next) => {
   try {
     const { email, phone, otp, newpassword } = req.body;
 
+    const createdAt = moment().format('YYYY/MM/DD H:mm:ss');
+
     if (!email) {
       const checkuser = await User.findOne({ phone });
+
+      const checkoldpassword = await User.find({ email,
+        'oldpasswords.oldpassword': newpassword }, { 'oldpasswords.$': 1 });
 
       if (!checkuser) {
         return res.json({
@@ -621,9 +658,18 @@ exports.changepassword = async (req, res, next) => {
           code: httpStatus.CONFLICT,
           message: 'Wrong OTP',
         });
+      } else if (checkoldpassword.length !== 0) {
+        return res.json({
+          success: false,
+          code: httpStatus.CONFLICT,
+          message: 'Password has been used before',
+        });
       }
 
       await User.findOneAndUpdate({ phone }, { password: newpassword });
+
+      await User.findOneAndUpdate({ email }, { $push:
+        { oldpasswords: { oldpassword: newpassword, createdAt } } });
 
       return res.json({
         success: true,
@@ -633,6 +679,9 @@ exports.changepassword = async (req, res, next) => {
     }
 
     const checkuser = await User.findOne({ email });
+
+    const checkoldpassword = await User.find({ email,
+      'oldpasswords.oldpassword': newpassword }, { 'oldpasswords.$': 1 });
 
     if (!checkuser) {
       return res.json({
@@ -646,15 +695,96 @@ exports.changepassword = async (req, res, next) => {
         code: httpStatus.CONFLICT,
         message: 'Wrong OTP',
       });
+    } else if (checkoldpassword.length !== 0) {
+      return res.json({
+        success: false,
+        code: httpStatus.CONFLICT,
+        message: 'Password has been used before',
+      });
     }
 
-    await User.findOneAndUpdate({ email }, { password: newpassword },
-    );
+    await User.findOneAndUpdate({ email }, { password: newpassword });
+
+    await User.findOneAndUpdate({ email }, { $push:
+      { oldpasswords: { oldpassword: newpassword, createdAt } } });
 
     return res.json({
       success: true,
       code: httpStatus.OK,
       message: 'Your password has been changed successfully',
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.addversion = async (req, res, next) => {
+  try {
+    const { version } = req.body;
+    const newversion = await (new Version({ version })).save();
+
+    return res.json({
+      success: true,
+      code: httpStatus.OK,
+      message: newversion,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+// TODO - change this
+exports.updateversion = async (req, res, next) => {
+  try {
+    const { oldversion, newversion } = req.body;
+
+    const currentversion = Version.findOne({ oldversion });
+
+    if (currentversion.length === 0) {
+      return res.json({
+        success: false,
+        code: httpStatus.NOT_FOUND,
+        message: 'Version not exists',
+      });
+    }
+
+    await Version.findOneAndUpdate({ version: oldversion }, { $set: { version: newversion } });
+
+    return res.json({
+      success: true,
+      code: httpStatus.OK,
+      message: `Version has been successfully updated to ${newversion}`,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.checkversion = async (req, res, next) => {
+  try {
+    const { version } = req.body;
+
+    const currentversion = await Version.find({ version });
+
+    if (currentversion.length === 1) {
+      return res.json({
+        success: true,
+        code: httpStatus.OK,
+        message: 'Same version',
+      });
+    } else if (currentversion.length === 0) {
+      return res.json({
+        success: false,
+        code: httpStatus.CONFLICT,
+        message: 'Wrong version',
+      });
+    }
+
+    return res.json({
+      success: false,
+      code: httpStatus.CONFLICT,
+      message: 'Wrong version',
     });
   } catch (error) {
     return next(error);

@@ -37,7 +37,7 @@ const ObjectId = mongoose.Types.ObjectId;
   const list = await User.find({ firstname: reg }, { firstname: 1,
     lastname: 1,
     wowtagid: 1,
-    personalimage: 1,
+    personalimageurl: 1,
     designation: 1,
     friendrequestsent: 1,
     friendrequestreceived: 1,
@@ -110,7 +110,7 @@ exports.friendsuggestion2 = async (req, res, next) => {
   const list = await User.find({ firstname: reg }, { firstname: 1,
     lastname: 1,
     wowtagid: 1,
-    personalimage: 1,
+    personalimageurl: 1,
     designation: 1,
     friendrequestsent: 1,
     friendrequestreceived: 1,
@@ -377,6 +377,53 @@ exports.mutual = async (req, res, next) => {
 
 /* =========================== */
 
+exports.myfriends = async (req, res, next) => {
+  try {
+    const id = req.user._id;
+    const ownFriends = await User.findById(id, { friends: 1 })
+      .populate({
+        path: 'friends',
+        select: 'friends firstname lastname personalimageurl',
+      })
+      .lean();
+
+    function mutualFriends() {
+      for (let i = 0; i < ownFriends.friends.length; i += 1) {
+        const mutual = ownFriends.friends[i].friends.length - 1;
+        ownFriends.friends[i].mutualfriends = mutual;
+        delete ownFriends.friends[i].friends;
+      }
+    }
+
+    mutualFriends();
+
+    return res.json({
+      success: true,
+      code: httpStatus.OK,
+      message: ownFriends,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+exports.friendscount = async (req, res, next) => {
+  try {
+    const id = req.user._id;
+    const ownFriends = await User.findById(id, { friends: 1 });
+
+    const mytotalfriends = await ownFriends.friends.length;
+    return res.json({
+      success: true,
+      code: httpStatus.OK,
+      message: mytotalfriends,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 
 exports.friendsuggestion = async (req, res, next) => {
   const id = req.user._id;
@@ -411,13 +458,13 @@ exports.friendsuggestion = async (req, res, next) => {
   const list = await User.find({ firstname: reg }, { firstname: 1,
     lastname: 1,
     wowtagid: 1,
-    personalimage: 1,
+    personalimageurl: 1,
     designation: 1,
     friendrequestsent: 1,
     friendrequestreceived: 1,
     friends: 1,
     place: 1 })
-    // .populate('friends', 'wowtagid personalimage firstname lastname designation friends')
+    // .populate('friends', 'wowtagid personalimageurl firstname lastname designation friends')
     .lean();
 
   function final() {
@@ -525,13 +572,13 @@ exports.friendsuggestionbackup = async (req, res, next) => {
   const list = await User.find({ firstname: reg }, { firstname: 1,
     lastname: 1,
     wowtagid: 1,
-    personalimage: 1,
+    personalimageurl: 1,
     designation: 1,
     friendrequestsent: 1,
     friendrequestreceived: 1,
     friends: 1,
     place: 1 })
-    // .populate('friends', 'wowtagid personalimage firstname lastname designation friends')
+    // .populate('friends', 'wowtagid personalimageurl firstname lastname designation friends')
     .lean();
 
 
@@ -604,6 +651,85 @@ exports.friendsuggestionbackup = async (req, res, next) => {
     success: true,
     code: httpStatus.OK,
     message: result,
+  });
+};
+
+
+exports.groupfriendsuggestion = async (req, res, next) => {
+  const id = req.user._id;
+  const { search } = req.body;
+
+  const ownFriends = await User.findById(id, { friends: 1 });
+
+  let friend;
+
+  let splitted = '';
+
+  function words() {
+    const parts = search.split(' ');
+
+    for (let i = 0; i < parts.length; i += 1) {
+      splitted += parts[i];
+
+      if (i < parts.length - 1) {
+        splitted += '|';
+      }
+    }
+
+    return splitted;
+  }
+
+  words();
+
+  const reg = new RegExp(splitted, 'gi');
+
+  const list = await User.find({ firstname: reg }, { firstname: 1,
+    lastname: 1,
+    wowtagid: 1,
+    personalimageurl: 1,
+    designation: 1,
+    friends: 1,
+    place: 1 })
+    // .populate('friends', 'wowtagid personalimageurl firstname lastname designation friends')
+    .lean();
+
+  function final() {
+    for (let i = 0; i < list.length; i += 1) {
+      friend = !!(String(list[i].friends)).includes(String(id));
+
+      delete list[i].friends;
+
+      if (friend === true) {
+        list[i].status = 'friend';
+      }
+    }
+  }
+
+  final();
+
+
+  const finalArr = [];
+
+  list.map((l, i) => {
+    const value = {
+      id: l._id,
+      firstname: l.firstname,
+      lastname: l.lastname,
+      status: l.status,
+    };
+    finalArr.push(value);
+  });
+
+  const friends = finalArr.filter(x => x.status === 'friend');
+
+  const result = friends.filter(x => String(x.id) !== String(id));
+
+
+  return res.json({
+    success: true,
+    code: httpStatus.OK,
+    result,
+    // message: result,
   });
 };
 

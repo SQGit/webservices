@@ -5,7 +5,8 @@ const { authorize } = require('../../middlewares/auth');
 // const {
 //   createUser,
 // } = require('../../validations/user.validation');
-const { personalimage, personalcover, personalself } = require('../../middlewares/media');
+// const { personalimage, personalcover, personalself } = require('../../middlewares/media');
+const { personalimage, personalcover, personalself } = require('../../middlewares/cloudinarymedia');
 
 const router = express.Router();
 
@@ -21,6 +22,12 @@ router
   .post(authorize(), controller.create);
 
 
+router.route('/updateemailvisible')
+  .post(authorize(), controller.updateemailvisible);
+
+router.route('/updatephonevisible')
+  .post(authorize(), controller.updatephonevisible);
+
 router.route('/updatepersonalprofile')
   .post(authorize(), controller.updatepersonalprofile);
 
@@ -30,6 +37,9 @@ router.route('/getpersonalprofile')
 router.route('/personalimage')
   .post(authorize(), personalimage, controller.personalimage);
 
+router.route('/personalgallery')
+  .post(authorize(), controller.personalgallery);
+
 router.route('/personalcover')
   .post(authorize(), personalcover, controller.personalcover);
 
@@ -38,6 +48,9 @@ router.route('/personalself')
 
 router.route('/updateprofessionalprofile')
   .post(authorize(), controller.updateprofessionalprofile);
+
+router.route('/updatecollegedetails')
+  .post(authorize(), controller.updatecollegedetails);
 
 router.route('/updateworkexperience')
   .post(authorize(), controller.updateworkexperience);
@@ -60,8 +73,17 @@ router.route('/profilecontact')
 router.route('/profileinfo')
   .post(authorize(), controller.profileinfo);
 
+router.route('/updateprofessionalskills')
+  .post(authorize(), controller.updateprofessionalskills);
+
+
 router.route('/updaterelationship')
   .post(authorize(), controller.updaterelationship);
+
+router.route('/updaterelationshipstatus')
+  .post(authorize(), controller.updaterelationshipstatus);
+
+
 
 // router
 //   .route('/profile')

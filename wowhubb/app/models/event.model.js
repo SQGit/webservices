@@ -71,20 +71,39 @@ const physicalStoreLocation = new mongoose.Schema({
   city: { type: String },
 });
 
-const Wowsome = new mongoose.Schema({
-  userid: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-});
+/* User Input Fields */
 
 const Rsvp = new mongoose.Schema({
   userid: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
   extra: { type: String },
 });
 
+const AudienceEngagementSubmission = new mongoose.Schema({
+  userid: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+  fullname: { type: String },
+  wowtagid: { type: String },
+  email: { type: String },
+  phone: { type: String },
+  address1: { type: String },
+  address2: { type: String },
+  city: { type: String },
+  zipcode: { type: String },
+  country: { type: String },
+  gender: { type: String },
+})
+
+const Wowsome = new mongoose.Schema({
+  userid: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+});
+
 const Comments = new mongoose.Schema({
   userid: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
   comment: { type: String },
+  createddisplaytime: { type: String },
   commentedAt: { type: String },
 });
+
+/* User Input Fields */
 
 const eventSchema = new mongoose.Schema({
   userid: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
@@ -96,6 +115,7 @@ const eventSchema = new mongoose.Schema({
   eventtimezone: { type: String },
   eventstartdate: { type: String },
   eventenddate: { type: String },
+  eventticketurl: { type: String },
   eventdescription: { type: String },
 
   /* Worst Coding feature requested from web */
@@ -106,6 +126,7 @@ const eventSchema = new mongoose.Schema({
 
   brandawareness: { type: String },
   sponsorslogo: { type: String },
+  sponsorslogourl: { type: String },
 
   // salesOnlineShopping
 
@@ -123,6 +144,7 @@ const eventSchema = new mongoose.Schema({
   // SalesEventOfferings
 
   eventsalescoupon1: { type: String },
+  eventsalescoupon1url: { type: String },
   eventsalesservicename1: { type: String },
   eventsalesdiscount1: { type: String },
   eventsalescouponfrom1: { type: String },
@@ -131,6 +153,7 @@ const eventSchema = new mongoose.Schema({
   eventsalesterms1: { type: String },
 
   eventsalescoupon2: { type: String },
+  eventsalescoupon2url: { type: String },
   eventsalesservicename2: { type: String },
   eventsalesdiscount2: { type: String },
   eventsalescouponfrom2: { type: String },
@@ -145,15 +168,19 @@ const eventSchema = new mongoose.Schema({
   //
 
   organisationlogo: { type: String },
+  organisationlogourl: { type: String },
 
   tickettype: { type: String },
   ticketprice: { type: String },
 
   coverpage: { type: String },
+  coverpageurl: { type: String },
   eventtitle: { type: String },
   runtimefrom: { type: String },
   runtimeto: { type: String },
   wowtagvideo: { type: String },
+  wowtagvideourl: { type: String },
+  wowtagvideothumb: { type: String },
   eventvenue: [eventVenue],
   eventtour: [eventTour],
   eventtouraddressvisibility: { type: String },
@@ -163,6 +190,13 @@ const eventSchema = new mongoose.Schema({
   numberofcitiestour: { type: String },
 
   eventfaqs: [eventFaqs],
+
+  /* Online event */
+
+  onlineeventname: { type: String },
+  webinarlink: { type: String },
+  teleconferencephone: { type: String },
+  teleconferencepassword: { type: String },
 
   /* Worst Coding feature requested from web */
 
@@ -198,14 +232,16 @@ const eventSchema = new mongoose.Schema({
   eventspeakerlink1: { type: String },
   eventspeakeractivities1: { type: String },
   eventhighlights1: { type: String },
-  eventhighlightsvideo1: { type: String },
+  eventhighlights1url: { type: String },
+  eventhighlights1thumb: { type: String },
 
   eventguesttype2: { type: String },
   eventspeakername2: { type: String },
   eventspeakerlink2: { type: String },
   eventspeakeractivities2: { type: String },
   eventhighlights2: { type: String },
-  eventhighlightsvideo2: { type: String },
+  eventhighlights2url: { type: String },
+  eventhighlights2thumb: { type: String },
 
   engagementformtype: { type: String },
   engagementformaction: { type: String },
@@ -232,6 +268,7 @@ const eventSchema = new mongoose.Schema({
     couponexpirydate: { type: String },
     termsandconditions: { type: String },
     couponimage: { type: String },
+    couponimageurl: { type: String },
   },
 
   privateevent: { type: String },
@@ -243,6 +280,7 @@ const eventSchema = new mongoose.Schema({
   createdAt: { type: String },
   wowsome: [Wowsome],
   rsvp: [Rsvp],
+  audienceengagementsubmission: [AudienceEngagementSubmission],
   comments: [Comments],
 });
 

@@ -6,6 +6,10 @@ const mediaRoutes = require('./media.route');
 const trialRoutes = require('./trial.route');
 const networkRoutes = require('./network.route');
 const providerRoutes = require('./provider.route');
+const groupRoutes = require('./group.route');
+const businessRoutes = require('./business.route');
+const eventServiceRoutes = require('./eventservice.route');
+const eventVenueRoutes = require('./eventvenue.route');
 
 const adminRoutes = require('./admin.route');
 
@@ -27,6 +31,10 @@ router.use('/media', mediaRoutes);
 router.use('/trial', trialRoutes);
 router.use('/network', networkRoutes);
 router.use('/provider', providerRoutes);
+router.use('/group', groupRoutes);
+router.use('/business', businessRoutes);
+router.use('/eventservice', eventServiceRoutes);
+router.use('/eventvenue',eventVenueRoutes);
 
 router.use('/admin', adminRoutes);
 

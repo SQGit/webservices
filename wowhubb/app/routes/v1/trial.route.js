@@ -12,4 +12,13 @@ router.route('/time')
 router.route('/compress')
   .post(compress, controller.compress);
 
+router.route('/sources')
+  .post(compress, controller.sources);
+
+router.route('/trips')
+  .post(compress, controller.trips);
+
+router.route('/tripdetails')
+  .post(compress, controller.tripdetails);
+
 module.exports = router;

@@ -7,18 +7,40 @@ const workExperience = new mongoose.Schema({
   title: { type: String },
   company: { type: String },
   location: { type: String },
-  frommonth: { type: String },
-  tomonth: { type: String },
   fromyear: { type: String },
   toyear: { type: String },
-  description: { type: String },
-  link: { type: String },
+  description: { type: String }
 });
 
 const Relationship = new mongoose.Schema({
   relation: { type: String },
   name: { type: String },
 });
+
+const OldPassword = new mongoose.Schema({
+  oldpassword: { type: String },
+  createdAt: { type: String },
+});
+
+const OldPersonal = new mongoose.Schema({
+  oldpersonalimageurl: {type: String},
+  createdAt: { type: String },
+})
+
+const Certification = new mongoose.Schema({
+  year: { type : String},
+  certification: {type: String}
+})
+
+const College = new mongoose.Schema({
+  college: { type : String},
+  from: {type: String},
+  to: {type: String},
+  degree: {type: String},
+  field: {type: String},
+  grade: {type: String},
+  description: {type: String},
+})
 
 
 const userSchema = new mongoose.Schema({
@@ -41,6 +63,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  phonevisible: {type: String, default: 'enabled'},
   email: {
     type: String,
     required: true,
@@ -48,6 +71,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
   },
+  emailvisible: {type: String, default: 'enabled'},
   password: {
     type: String,
     // required: true,
@@ -66,12 +90,19 @@ const userSchema = new mongoose.Schema({
   personalimage: {
     type: String,
   },
+  personalimageurl: {type: String},
+  oldpersonalimageurls: [OldPersonal],
+  personalimagethumb: {type: String},
   personalcover: {
     type: String,
   },
+  personalcoverurl: { type: String },
+  personalcoverthumb: {type: String },
   personalself: {
     type: String,
   },
+  personalselfurl: { type: String },
+  personalselfthumb: { type: String },
   place: {
     type: String,
   },
@@ -93,18 +124,20 @@ const userSchema = new mongoose.Schema({
   aboutme: {
     type: String,
   },
+  professionalskills: {type: Array},
   createdAt: { type: String },
   quote: { type: String },
   religion: { type: String },
   language: { type: String },
   country: { type: String },
   state: { type: String },
-  sociallinks: { type: String },
+  sociallinks: { type: Array },
   designation: { type: String },
   education: { type: Array },
   workexperience: [workExperience],
   workplace: { type: String },
-  certification: { type: Array },
+  certification: [Certification],
+  college: [College],
   volunteer: { type: Array },
   firsttime: {
     type: String,
@@ -116,6 +149,9 @@ const userSchema = new mongoose.Schema({
   },
   otp: { type: String },
   relationship: [Relationship],
+  relationshipstatus: {type: String},
+  relationshipwith: {type: String},
+  oldpasswords: [OldPassword],
   friends: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -132,6 +168,24 @@ const userSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user',
+    },
+  ],
+  business: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'business',
+    },
+  ],
+  eventservice: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'eventservice',
+    },
+  ],
+  eventvenue: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'eventvenue',
     },
   ],
 });

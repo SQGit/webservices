@@ -9,6 +9,13 @@ const {
 
 const router = express.Router();
 
+
+router.route('/friendscount')
+  .post(authorize(), controller.friendscount);
+
+router.route('/myfriends')
+  .post(authorize(), controller.myfriends);
+
 router.route('/friendsuggestion')
   .post(authorize(), controller.friendsuggestion);
 
@@ -23,5 +30,8 @@ router.route('/acceptrequest')
 
 router.route('/mutual')
   .post(authorize(), controller.mutual);
+
+router.route('/groupfriendsuggestion')
+  .post(authorize(), controller.groupfriendsuggestion);
 
 module.exports = router;

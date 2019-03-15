@@ -1,0 +1,53 @@
+html(lang="en")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        meta(http-equiv="X-UA-Compatible", content="ie=edge")
+        meta(name="robots", content="index, follow")
+        title Wowhubb | Your One Stop Event Networking Platform
+        link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Roboto:300,400")
+        link(rel="shortcut icon", type="image/png" , href="../public/invite/fav.png")
+        style(type="text/css").
+            body {
+                font-family: Segoe, 'Segoe UI', sans-serif!important;
+                margin:0;
+                padding:0;
+            }
+            table {
+                border-spacing: 0px!important;
+            }
+            table,td,tr {
+                margin: 0;
+                padding: 0;
+            }
+    body
+        table(width='100%', border='0', cellspacing='0', cellpadding='0')
+            tbody
+                tr
+                td
+                    table(width='35%', border='0', cellspacing='0', cellpadding='0', style='margin:0 auto; border:1px solid #ccc;')
+                    tbody
+                        tr
+                            td(height='105', align='center', valign='middle', bgcolor='#231F20', style='text-align:center;color:#fff;font-size:40px') !Wowhubb
+                        tr
+                        td(height='105', align='center', valign='middle', bgcolor='#231F20')
+                            img(src='logo.png', alt='logo')
+                        tr
+                        td(height='45')
+                            img(src='coverpage.jpg', alt='coverpage')
+                        tr
+                        td(height='45', align='center', valign='middle', bgcolor='#E91E63', style='line-height:35px; color:#fff;')
+                            span(style='font-size:20px;') #{firstname} #{lastname} has invited you for #{eventtitle}
+                            br
+                            | Click on this link to RSVP
+                            br
+                            a(href='#', style='color:#fff; text-decoration:underline;') http://104.197.80.225:8080/wowhubb/home/#{eventtitle}
+                        tr
+                        td(height='150', align='center', valign='middle', bgcolor='#EDEDED', style='line-height:35px;')
+                            img(src='playstore.png', alt='playstore')
+                            br
+                            | Get our Wowhubb app on Play Store with the following link..
+                            br
+                            a(href='#', style='color:#000; text-decoration:underline;') https://play.google.com/store/apps/details?id=com.wowhubb
+
+        

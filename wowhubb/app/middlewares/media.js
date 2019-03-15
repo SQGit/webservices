@@ -37,6 +37,14 @@ const eventmediaUpload = multer({
 
 exports.eventdetails = eventmediaUpload.array('coverpage', 1);
 
+// android eventdetails 
+
+exports.androideventdetails = eventmediaUpload.fields([
+  { name: 'coverpage', maxCount: 1 },
+  { name: 'wowtagvideo', maxCount: 1 },
+]);
+
+
 exports.proeventdetails = eventmediaUpload.fields([
   { name: 'coverpage', maxCount: 1 },
   { name: 'organisationlogo', maxCount: 1 },
@@ -154,3 +162,51 @@ const nearbyEventUpload = multer({
 });
 
 exports.nearbyevent = nearbyEventUpload.array('eventlogo', 1);
+
+
+// Business
+
+const businessmediaStorage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, './public/businessmedia');
+  },
+  filename: generateFilename,
+});
+
+const businessMediaUpload = multer({
+  storage: businessmediaStorage,
+});
+
+exports.businessdetails = businessMediaUpload.fields([
+  { name: 'coverpage', maxCount: 1 },
+  { name: 'businesslogo', maxCount: 1 },
+]);
+
+exports.businessgallery = businessMediaUpload.fields([
+  { name: 'productfile1', maxCount: 1 },
+  { name: 'productfile2', maxCount: 1 },
+]);
+
+
+// EventService
+
+const eventservicemediaStorage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, './public/eventservicemedia');
+  },
+  filename: generateFilename,
+});
+
+const eventserviceMediaUpload = multer({
+  storage: eventservicemediaStorage,
+});
+
+exports.eventservicedetails = eventserviceMediaUpload.fields([
+  { name: 'coverpage', maxCount: 1 },
+  { name: 'businesslogo', maxCount: 1 },
+]);
+
+exports.eventservicegallery = eventserviceMediaUpload.fields([
+  { name: 'productfile1', maxCount: 1 },
+  { name: 'productfile2', maxCount: 1 },
+]);

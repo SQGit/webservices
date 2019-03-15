@@ -15,4 +15,13 @@ router.route('/provider/:name')
 router.route('/nearby/:name')
   .get(controller.nearby);
 
+router.route('/business/:name')
+  .get(controller.business);
+
+router.route('/static/:name')
+  .get(controller.static);
+
+router.route('/eventservice/:name')
+  .get(controller.eventservice);
+
 module.exports = router;

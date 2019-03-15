@@ -1,5 +1,7 @@
 const httpStatus = require('http-status');
 const moment = require('moment');
+const request = require('request');
+
 
 /* const imagemin = require('imagemin');
 // const imageminJpegtran = require('imagemin-jpegtran');
@@ -76,3 +78,83 @@ exports.compress = async (req, res, next) => {
     message: videos,
   });
 };
+
+
+exports.sources = async (req, res, next) => {
+  const oauth = {
+    consumer_key: 'mQxMddhQknIoLctWGcbqfpfwzNmsoS',
+    consumer_secret: 'xWSPPj6jNuVJcd6NoruGzwFRznMZud',
+  };
+
+  const url = 'http://api.seatseller.travel/sources';
+
+  request.get({ url, oauth }, (err, response, body) => {
+    if (err) {
+      console.log(`err ${err}`);
+    } else if (response) {
+      return res.json({
+        response,
+      });
+    } else {
+      console.log(`body ${body}`);
+    }
+  });
+};
+
+
+exports.trips = async (req, res, next) => {
+  const oauth = {
+    consumer_key: 'mQxMddhQknIoLctWGcbqfpfwzNmsoS',
+    consumer_secret: 'xWSPPj6jNuVJcd6NoruGzwFRznMZud',
+  };
+
+  // const {frompickervalue,topickervalue,dateofjourney} = req.body;
+
+  const { from, to, doj } = req.body;
+  // const from = 501;
+  // const to = 2566;
+  // const doj = '2018-04-21';
+
+  // const url = 'http://api.seatseller.travel/availabletrips?source=3&destination=6&doj=2013-01-9 ';
+  const url = `http://api.seatseller.travel/availabletrips?source=${from}&destination=${to}&doj=${doj}`;
+
+  request.get({ url, oauth }, (err, response, body) => {
+    if (err) {
+      console.log(`err ${err}`);
+    } else if (response) {
+      // console.log(response);
+      return res.json({
+        response,
+      });
+    } else {
+      console.log(`body ${body}`);
+    }
+  });
+};
+
+exports.tripdetails = async (req, res, next) => {
+  const oauth = {
+    consumer_key: 'mQxMddhQknIoLctWGcbqfpfwzNmsoS',
+    consumer_secret: 'xWSPPj6jNuVJcd6NoruGzwFRznMZud',
+  };
+
+  const { tripid } = req.body;
+
+  // const url = 'http://api.seatseller.travel/availabletrips?source=3&destination=6&doj=2013-01-9 ';
+  const url = `http://api.seatseller.travel/tripdetails?id=${tripid}`;
+
+  request.get({ url, oauth }, (err, response, body) => {
+    if (err) {
+      console.log(`err ${err}`);
+    } else if (response) {
+      // console.log(response);
+      return res.json({
+        response,
+      });
+    } else {
+      console.log(`body ${body}`);
+      // return alert('No network')
+    }
+  });
+};
+

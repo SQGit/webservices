@@ -432,7 +432,7 @@ exports.feed = async (req, res, next) => {
 
     const event = await Event.find({ userid: id })
       .sort({ createdAt: -1 })
-      .populate('userid', 'wowtagid personalimage firstname lastname -_id');
+      .populate('userid', 'wowtagid personalimageurl firstname lastname -_id');
 
     return res.json({ success: true, code: httpStatus.OK, message: event });
   } catch (error) {
@@ -466,9 +466,9 @@ exports.newfeed = async (req, res, next) => {
   function pullFeed() {
     for (let i = 0; i < userArray.length; i += 1) {
       feedArray.push(Event.find({ userid: userArray[i] })
-        .populate('userid', 'wowtagid personalimage firstname lastname designation')
+        .populate('userid', 'wowtagid personalimageurl firstname lastname designation')
         .populate('wowsome.userid', 'wowtagid firstname lastname -_id')
-        .populate('comments.userid', 'wowtagid firstname lastname personalimage -_id')
+        .populate('comments.userid', 'wowtagid firstname lastname personalimageurl -_id')
         .lean(),
       );
     }
@@ -523,7 +523,7 @@ exports.newfeed2 = async (req, res, next) => {
 
   // const event = await Event.find({ userid: id })
   //   .sort({ createdAt: -1 })
-  //   .populate('userid', 'wowtagid personalimage firstname lastname -_id');
+  //   .populate('userid', 'wowtagid personalimageurl firstname lastname -_id');
 
   const ownInterests = await User.findById(id, { interests: 1, _id: 0 });
   const otherIntersets = await User.find({}, { interests: 1 });
@@ -561,7 +561,7 @@ exports.newfeed2 = async (req, res, next) => {
     for (let i = 0; i < userArray.length; i += 1) {
       feedArray.push(Event.find({ userid: userArray[i] })
         // .sort({ createdAt: -1 })
-        .populate('userid', 'wowtagid personalimage firstname lastname designation -_id'),
+        .populate('userid', 'wowtagid personalimageurl firstname lastname designation -_id'),
       );
     }
   }
@@ -688,7 +688,7 @@ exports.getrsvp = async (req, res, next) => {
     }
 
     const result = await Event.find({ _id: eventid, 'rsvp.userid': userid }, { 'rsvp.$': 1 })
-      .populate('rsvp.userid', 'wowtagid personalimage firstname lastname -_id');
+      .populate('rsvp.userid', 'wowtagid personalimageurl firstname lastname -_id');
 
     return res.json({
       success: true,
@@ -718,7 +718,7 @@ exports.postrsvp = async (req, res, next) => {
         { rsvp: { userid, extra } } });
 
       const result = await Event.find({ _id: eventid, 'rsvp.userid': userid }, { 'rsvp.$': 1 })
-        .populate('rsvp.userid', 'wowtagid personalimage firstname lastname -_id');
+        .populate('rsvp.userid', 'wowtagid personalimageurl firstname lastname -_id');
       return res.json({
         success: true,
         message: result,
@@ -729,7 +729,7 @@ exports.postrsvp = async (req, res, next) => {
       { $set: { 'rsvp.$.extra': extra } });
 
     const result = await Event.find({ _id: eventid, 'rsvp.userid': userid }, { 'rsvp.$': 1 })
-      .populate('rsvp.userid', 'wowtagid personalimage firstname lastname -_id');
+      .populate('rsvp.userid', 'wowtagid personalimageurl firstname lastname -_id');
 
     return res.json({
       success: true,
@@ -750,7 +750,7 @@ exports.postcomment = async (req, res, next) => {
 
 
   const result = await Event.findById(eventid, { comments: 1 })
-    .populate('comments.userid', 'wowtagid personalimage firstname lastname')
+    .populate('comments.userid', 'wowtagid personalimageurl firstname lastname')
     .lean();
 
   function addCount() {
@@ -775,7 +775,7 @@ exports.getcomment = async (req, res, next) => {
     const { eventid } = req.body;
 
     const result = await Event.findById(eventid, { comments: 1 })
-      .populate('comments.userid', 'wowtagid personalimage firstname lastname');
+      .populate('comments.userid', 'wowtagid personalimageurl firstname lastname');
 
     return res.json({
       success: true,

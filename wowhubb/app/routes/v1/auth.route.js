@@ -35,4 +35,13 @@ router.route('/forgetpassword')
 router.route('/changepassword')
   .post(controller.changepassword);
 
+router.route('/addversion')
+  .post(controller.addversion);
+
+router.route('/updateversion')
+  .post(controller.updateversion);
+
+router.route('/checkversion')
+  .post(controller.checkversion);
+
 module.exports = router;
